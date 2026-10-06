@@ -1,0 +1,346 @@
+/**
+ * This file contains the implementations of the utility functions for
+ * the sparse linear algebra header slinalg.h
+ * \file slinalg_util.cpp
+ * \author Ryan Daly
+ * \em rpdaly@ucsd.edu
+ * \date 03/09/2009
+ */
+
+#include <slinalg.h>
+
+/**
+ * This function takes the \a actual \a index into the row. This is emphasized by using idx_in
+ * instead of j_in, which would be a column index rather than an insertion point. User must call
+ * binary_search() to get the desired insertion index before calling _smatrix_insert().
+ */
+int _smatrix_insert( smatrix_t *mat_in, long int i_in, long int j_in, long int idx_in, double val_in )
+{
+	long int i;
+	double *ptr1;
+	long int *ptr2;
+
+	mat_in->lvec[i_in] = mat_in->lvec[i_in] + 1;
+	ptr1 = (double*) realloc( (void*) mat_in->mvec[i_in], mat_in->lvec[i_in] * sizeof(double) );
+	if( ptr1 != NULL )
+		mat_in->mvec[i_in] = ptr1;
+	else
+		printf( "ERROR: realloc() returned NULL\n" );
+	ptr2 = (long int*) realloc( (void*) mat_in->jvec[i_in], mat_in->lvec[i_in] * sizeof(long int) );
+	if( ptr2 != NULL )
+		mat_in->jvec[i_in] = ptr2;
+	else
+		printf( "ERROR: realloc() returned NULL\n" );
+	for(i=mat_in->lvec[i_in]-2;i>idx_in;i--)
+	{
+		mat_in->mvec[i_in][i+1] = mat_in->mvec[i_in][i];
+		mat_in->jvec[i_in][i+1] = mat_in->jvec[i_in][i];
+	}
+	bcopy( &val_in, mat_in->mvec[i_in] + idx_in + 1, sizeof(double) );
+	bcopy( &j_in, mat_in->jvec[i_in] + idx_in + 1, sizeof(long int) );
+}
+
+int _smatrix_delete( smatrix_t *mat_in, long int i_in, long int j_in )
+{
+	
+}
+
+void smatrix_init( smatrix_t *mat_in, long int nr_in, long int nc_in )
+{
+	long int i;
+	mat_in->nvals = 0;
+	mat_in->nrows = nr_in;
+	mat_in->ncols = nc_in;
+	mat_in->mvec = (double**) malloc( nr_in * sizeof(double*) );
+	for(i=0;i<nr_in;i++)
+		mat_in->mvec[i] = NULL;
+	mat_in->jvec = (long int**) malloc( nr_in * sizeof(long int*) );
+	for(i=0;i<nr_in;i++)
+		mat_in->jvec[i] = NULL;
+// 	mat_in->cvec = (long int*) malloc( nc_in * sizeof(long int*) );
+// 	for(i=0;i<nc_in;i++)
+// 		mat_in->cvec[i] = NULL;
+	mat_in->lvec = (long int*) malloc( nr_in * sizeof(long int) );
+	for(i=0;i<nr_in;i++)
+		mat_in->lvec[i] = 0;
+}
+
+void smatrix_free( smatrix_t *mat_in )
+{
+	long int i;
+	for(i=0;i<mat_in->nrows;i++)
+	{
+		if( mat_in->mvec[i] != NULL )
+			free( mat_in->mvec[i] );
+		if( mat_in->jvec[i] != NULL )
+			free( mat_in->jvec[i] );
+	}
+	if( mat_in->mvec != NULL )
+		free( mat_in->mvec );
+	if( mat_in->jvec != NULL )
+		free( mat_in->jvec );
+// 	if( mat_in->cvec != NULL )
+// 		free( mat_in->cvec );
+	if( mat_in->lvec != NULL )
+		free( mat_in->lvec );
+}
+
+void smatrix_insert( smatrix_t *mat_in, long int i_in, long int j_in, double val_in )
+{
+	long int i,j,k,idx,its;
+	int ret;
+
+	assert( i_in < mat_in->nrows && j_in < mat_in->ncols );
+
+	if( fabs( val_in ) > SMATRIX_ZERO_THRESHOLD )
+	{
+		ret = binary_closest( &j_in, mat_in->jvec[i_in], &mat_in->lvec[i_in], &idx, &its );
+
+		if( ret == 0 )
+			mat_in->mvec[i_in][idx] = val_in;
+		else
+		{
+			if( mat_in->lvec[i_in] <= 0 )
+				_smatrix_insert( mat_in, i_in, j_in, -1, val_in );
+			else
+				_smatrix_insert( mat_in, i_in, j_in, idx, val_in );
+			mat_in->nvals = mat_in->nvals + 1;
+		}
+	}
+}
+
+void smatrix_entry( smatrix_t *mat_in, long int i_in, long int j_in, double *val_out )
+{
+	long int idx,its;
+	int ret;
+	assert( i_in < mat_in->nrows && j_in < mat_in->ncols );
+	ret = binary_closest( &j_in, mat_in->jvec[i_in], mat_in->lvec + i_in, &idx, &its );
+	if( ret == -1 )
+		*val_out = 0.0;
+	else
+		bcopy( mat_in->mvec[i_in] + idx, val_out, sizeof(double) );
+}
+
+void smatrix_entry_add( smatrix_t *mat_in, long int i_in, long int j_in, double val_in )
+{
+	double tmp;
+	assert( i_in < mat_in->nrows && j_in < mat_in->ncols );
+	smatrix_entry( mat_in, i_in, j_in, &tmp );
+	smatrix_insert( mat_in, i_in, j_in, tmp + val_in );
+}
+
+void smatrix_entry_subtract( smatrix_t *mat_in, long int i_in, long int j_in, double val_in )
+{
+	double tmp;
+	assert( i_in < mat_in->nrows && j_in < mat_in->ncols );
+	smatrix_entry( mat_in, i_in, j_in, &tmp );
+	smatrix_insert( mat_in, i_in, j_in, tmp - val_in );
+}
+
+void smatrix_delete( smatrix_t *mat_in, long int i_in, long int j_in )
+{
+	long int i,j,idx,its;
+	int ret;
+
+	ret = binary_closest( &j_in, mat_in->jvec[i_in], &mat_in->lvec[i_in], &idx, &its );
+
+	if( ret == 0 )
+	{
+		for(i=idx;i<mat_in->lvec[i_in]-1;i++)
+		{
+			mat_in->mvec[i_in][i] = mat_in->mvec[i_in][i+1];
+			mat_in->jvec[i_in][i] = mat_in->jvec[i_in][i+1];
+		}
+		mat_in->lvec[i_in] = mat_in->lvec[i_in] - 1;
+		mat_in->mvec[i_in] = (double*) realloc( (void*) mat_in->mvec[i_in], mat_in->lvec[i_in] * sizeof(double) );
+		mat_in->jvec[i_in] = (long int*) realloc( (void*) mat_in->jvec[i_in], mat_in->lvec[i_in] * sizeof(long int) );
+		mat_in->nvals = mat_in->nvals - 1;
+	}
+}
+
+void smatrix_print( smatrix_t *mat_in )
+{
+	long int i,j,last,tmp;
+	for(i=0;i<mat_in->nrows;i++)
+	{
+		printf( "%d:: ", i );
+		for(j=0;j<mat_in->lvec[i];j++)
+			printf( "[%d] %f ", mat_in->jvec[i][j], mat_in->mvec[i][j] );
+		printf( "\n" );
+	}
+}
+
+void smatrix_print_matrix( smatrix_t *mat_in )
+{
+	long int i,j;
+	double dbl;
+	for(i=0;i<mat_in->nrows;i++)
+	{
+		for(j=0;j<mat_in->ncols;j++)
+		{
+			smatrix_entry( mat_in, i, j, &dbl );
+			printf( "%.8f ", dbl );
+		}
+		printf( "\n" );
+	}
+}
+
+void smatrix_details( smatrix_t *mat_in )
+{
+	long int alloc;
+	printf( "smatrix_details(): " );
+	printf( "nrows = %d, ncols = %d, nvals = %d, ", mat_in->nrows, mat_in->ncols, mat_in->nvals );
+	alloc = mat_in->nrows * ( sizeof(double*) + sizeof(long int*) ) + mat_in->nvals * ( sizeof(double) + sizeof(long int) );
+	printf( "Total allocated memory: %d bytes\n", alloc );
+}
+
+void smatrix_print_debug( smatrix_t *mat_in )
+{
+	long int i,j,last,tmp;
+	for(i=0;i<mat_in->nrows;i++)
+	{
+		printf( "[%d]:: (%d) ", i, mat_in->lvec[i] );
+		for(j=0;j<mat_in->lvec[i];j++)
+			printf( "[%d] %f ", mat_in->jvec[i][j], mat_in->mvec[i][j] );
+		printf( "\n" );
+	}
+	smatrix_details( mat_in );
+}
+
+/**
+ * This function will exit automatically if the `dimensional parameter' is not equal to 0xff.
+ */
+int smatrix_load( smatrix_t *mat_in, char *fn_in )
+{
+	std::ifstream fp;
+	fp.open( fn_in, std::ios::in | std::ios::binary );
+	if( fp.fail() )
+		return -1;
+	long int i,j,r,cols,rows,vals,tmp;
+	char ndp;
+	fp.read( (char*) &ndp, 1 );
+	assert( ndp == (char) 0xff );						// ndp = 0xff asserts that this is a sparse matrix binary
+	fp.read( (char*) &vals, sizeof(long int) );
+	fp.read( (char*) &rows, sizeof(long int) );
+	fp.read( (char*) &cols, sizeof(long int) );
+	if( vals < 0 || rows < 0 || cols < 0 )
+		return -2;
+	smatrix_init( mat_in, rows, cols );
+	while( true )
+	{
+		fp.read( (char*) &r, sizeof(long int) );			// Read the current row number
+		if( r < 0 || r >= rows )
+			return -3;						// Return value of -1 from smatrix_load indicates an index out of range
+		fp.read( (char*) ( mat_in->lvec + r ), sizeof(long int) );	// Read the number of non-zero entries in row r
+		if( mat_in->lvec[r] < 0 || mat_in->lvec[r] >= cols )
+			return -3;						// Ditto here
+		mat_in->mvec[r] = (double*) malloc( ( mat_in->lvec[r] + 1 ) * sizeof(double) );
+		if( mat_in->mvec[r] == NULL )					// This is a bad error which mean
+			return -4;						// that could not allocate memory
+		mat_in->jvec[r] = (long int*) malloc( ( mat_in->lvec[r] + 1 ) * sizeof(long int) );
+		if( mat_in->jvec[r] == NULL )
+			return -4;
+		for(j=0;j<mat_in->lvec[r];j++)
+		{
+			fp.read( (char*) ( mat_in->jvec[r] + j ), sizeof(long int) );
+			fp.read( (char*) ( mat_in->mvec[r] + j ), sizeof(double) );
+			mat_in->nvals = mat_in->nvals + 1;
+		}
+		if( mat_in->nvals >= vals )					// Should never have mat_in->nvals > vals, ever
+			break;
+	}
+	fp.close();
+	assert( mat_in->nvals == vals );					// Just in case
+	return 0;
+}
+
+/**
+ * This function stores 0xff as the `dimensional parameter' (the first byte in the binary file)
+ * to indicate that the file is a sparse matrix binary file.
+ */
+int smatrix_save( smatrix_t *mat_in, char *fn_in )
+{
+	std::ofstream fp;
+	fp.open( fn_in, std::ios::out | std::ios::binary );
+	if( fp.fail() )
+		return -1;
+	long int i,j;
+	char ndp = 0xff;
+	fp.write( (char*) &ndp, 1 ); // Write 0xFF as the dimensional parameter, similar in _dsvmat/_dldmat and vec counterparts
+	fp.write( (char*) &mat_in->nvals, sizeof(long int) ); // Write the number of entries, cast as long int (usually 8 bytes)
+	fp.write( (char*) &mat_in->nrows, sizeof(long int) ); // Write the number of rows
+	fp.write( (char*) &mat_in->ncols, sizeof(long int) ); // Write the number of columns
+	for(i=0;i<mat_in->nrows;i++)
+	{
+		if( mat_in->lvec[i] <= 0 )				/* Only write row to file if it has non-zero entries	*/
+			continue;
+		fp.write( (char*) &i, sizeof(long int) );		/* Write the row number					*/
+		fp.write( (char*) &mat_in->lvec[i], sizeof(long int) );	/* Write the row length					*/
+		for(j=0;j<mat_in->lvec[i];j++)
+		{
+			fp.write( (char*) &mat_in->jvec[i][j], sizeof(long int) );
+			fp.write( (char*) &mat_in->mvec[i][j], sizeof(double) );
+		}
+	}
+	fp.close();
+	return 0;
+}
+
+/**
+ * This function transposes the data structure, i.e. exchanges rows/columns. This is a pretty fast process
+ * for a sparse matrix.
+ */
+void smatrix_transpose( smatrix_t *mat_in, smatrix_t *mat_out )
+{
+	long int i,j;
+	for(i=0;i<mat_in->nrows;i++)
+		for(j=0;j<mat_in->lvec[i];j++)
+			smatrix_insert( mat_out, mat_in->jvec[i][j], i, mat_in->mvec[i][j] );
+}
+
+void smatrix_multiply( smatrix_t *lmat_in, smatrix_t *rmat_in, smatrix_t *mat_out )
+{
+	
+}
+
+/**
+ * Initializes the input sparse matrix to the identity.
+ */
+void smatrix_identity( smatrix_t *mat_in )
+{
+	long int i;
+	assert( mat_in->nrows == mat_in->ncols );
+	for(i=0;i<mat_in->nrows;i++)
+		smatrix_insert( mat_in, i, i, 1.0 );
+}
+
+void smatrix_convert_to_dense( smatrix_t *mat_in, dmatrix_t *mat_out )
+{
+	long int i,j;
+	double tmp;
+	assert( mat_in->ncols == mat_out->ncols && mat_in->nrows == mat_out->nrows );
+	for(i=0;i<mat_in->nrows;i++)
+	{
+		for(j=0;j<mat_in->ncols;j++)
+		{
+			smatrix_entry( mat_in, i, j, &tmp );
+			mat_out->start[i*mat_out->rsize+j] = tmp;
+		}
+	}
+}
+
+/*
+ * START Sparse Linear Algebra Functions
+ */
+
+void smatrix_shift( smatrix_t *mat_in, double shift_in )
+{
+	long int i,j;
+	double tmp;
+	j = ( mat_in->nrows < mat_in->ncols ) ? mat_in->nrows : mat_in->ncols;
+	for(i=0;i<j;i++)
+	{
+		smatrix_entry( mat_in, i, i, &tmp );
+		smatrix_insert( mat_in, i, i, tmp - shift_in );
+	}
+}

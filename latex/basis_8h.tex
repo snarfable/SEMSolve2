@@ -1,0 +1,153 @@
+\hypertarget{basis_8h}{
+\section{basis.h File Reference}
+\label{basis_8h}\index{basis.h@{basis.h}}
+}
+{\tt \#include $<$combinadic.h$>$}\par
+{\tt \#include $<$math.h$>$}\par
+{\tt \#include $<$lapack.h$>$}\par
+{\tt \#include $<$dlinalg.h$>$}\par
+
+
+Include dependency graph for basis.h:\subsection*{Functions}
+\begin{CompactItemize}
+\item 
+\hypertarget{basis_8h_9afc6a332c3d2a62fa456b634f82656a}{
+void \hyperlink{basis_8h_9afc6a332c3d2a62fa456b634f82656a}{basis\_\-load\_\-std\_\-nodes} (basis\_\-t $\ast$)}
+\label{basis_8h_9afc6a332c3d2a62fa456b634f82656a}
+
+\begin{CompactList}\small\item\em Must have called basis\_\-init first. \item\end{CompactList}\item 
+\hypertarget{basis_8h_72da0950811a559ba2148c4ed82d8688}{
+void \hyperlink{basis_8h_72da0950811a559ba2148c4ed82d8688}{basis\_\-load\_\-quad\_\-nodes} (basis\_\-t $\ast$, char $\ast$)}
+\label{basis_8h_72da0950811a559ba2148c4ed82d8688}
+
+\begin{CompactList}\small\item\em Must have initialized so dim, deg, and qdeg have values. \item\end{CompactList}\item 
+long int \hyperlink{basis_8h_36d827dbd38020c03ff42e6d3ee0f811}{basis\_\-term\_\-index} (long int, long int, long int $\ast$)
+\item 
+long int \hyperlink{basis_8h_ed8213a433e1440cd7c2c529fbbafbe8}{basis\_\-poly\_\-dim} (long int, long int)
+\item 
+int \hyperlink{basis_8h_a64bc580d2c29524cfb346fdf75f660f}{basis\_\-gen\_\-coeffs} (basis\_\-t $\ast$)
+\begin{CompactList}\small\item\em This function is called when the basis is constructed. \item\end{CompactList}\item 
+\hypertarget{basis_8h_86e8b85d36cd2370d623bccc8e9124ca}{
+int \hyperlink{basis_8h_86e8b85d36cd2370d623bccc8e9124ca}{basis\_\-gen\_\-quad\_\-coeffs} (basis\_\-t $\ast$)}
+\label{basis_8h_86e8b85d36cd2370d623bccc8e9124ca}
+
+\begin{CompactList}\small\item\em This function is called when the basis is constructed. \item\end{CompactList}\item 
+double \hyperlink{basis_8h_d1d717df4c2f0cab9db40d1b4862b4cb}{basis\_\-term\_\-integral\_\-simplex} (long int, long int $\ast$)
+\begin{CompactList}\small\item\em A very very nice function for integrating single polynomial terms over simplices. \item\end{CompactList}\item 
+\hypertarget{basis_8h_1967dd2d50dc5dd4bb29697f603f02e8}{
+double \hyperlink{basis_8h_1967dd2d50dc5dd4bb29697f603f02e8}{basis\_\-plane\_\-test} (long int, long int, double $\ast$, long int $\ast$, double $\ast$)}
+\label{basis_8h_1967dd2d50dc5dd4bb29697f603f02e8}
+
+\begin{CompactList}\small\item\em Used to detect whether an input node lies in a given plane in the simplex. \item\end{CompactList}\item 
+int \hyperlink{basis_8h_b3cc233488d18d1bb01cac2da5b377f1}{basis\_\-func\_\-gradient} (basis\_\-t $\ast$, long int, double $\ast$, double $\ast$)
+\begin{CompactList}\small\item\em basis, func index, input, output \item\end{CompactList}\item 
+void \hyperlink{basis_8h_edb7aa4676cb88214a749c0aef6fe345}{basis\_\-barycentric} (long int, double $\ast$, double $\ast$, double $\ast$)
+\begin{CompactList}\small\item\em Used to calculate the barycentric coordinates with a d-simplex as polygon. \item\end{CompactList}\item 
+\hypertarget{basis_8h_52bcf14b05e6296dad058c3eacae5aae}{
+double \hyperlink{basis_8h_52bcf14b05e6296dad058c3eacae5aae}{basis\_\-eval\_\-interp\_\-func} (basis\_\-t $\ast$, long int, double $\ast$)}
+\label{basis_8h_52bcf14b05e6296dad058c3eacae5aae}
+
+\begin{CompactList}\small\item\em Evaluates an interpolation function at a given input point. \item\end{CompactList}\end{CompactItemize}
+
+
+\subsection{Detailed Description}
+This is the header file which defines the basis\_\-t type/class. Version 2 of this is more simplistic than the class-based older version.
+
+\begin{Desc}
+\item[Author:]Ryan Daly {\em \href{mailto:rpdaly@ucsd.edu}{\tt rpdaly@ucsd.edu}\/} \end{Desc}
+\begin{Desc}
+\item[Date:]03/04/2009 \end{Desc}
+
+
+Definition in file \hyperlink{basis_8h-source}{basis.h}.
+
+\subsection{Function Documentation}
+\hypertarget{basis_8h_edb7aa4676cb88214a749c0aef6fe345}{
+\index{basis.h@{basis.h}!basis\_\-barycentric@{basis\_\-barycentric}}
+\index{basis\_\-barycentric@{basis\_\-barycentric}!basis.h@{basis.h}}
+\subsubsection[basis\_\-barycentric]{\setlength{\rightskip}{0pt plus 5cm}void basis\_\-barycentric (long int {\em dim\_\-in}, \/  double $\ast$ {\em point\_\-in}, \/  double $\ast$ {\em simp\_\-in}, \/  double $\ast$ {\em bary\_\-out})}}
+\label{basis_8h_edb7aa4676cb88214a749c0aef6fe345}
+
+
+Used to calculate the barycentric coordinates with a d-simplex as polygon. 
+
+This function converts an input point, point\_\-in, from cartesian coordinates to barycentric coordinates based on an input simplex in simp\_\-in. 
+
+Definition at line 441 of file basis.cpp.\hypertarget{basis_8h_b3cc233488d18d1bb01cac2da5b377f1}{
+\index{basis.h@{basis.h}!basis\_\-func\_\-gradient@{basis\_\-func\_\-gradient}}
+\index{basis\_\-func\_\-gradient@{basis\_\-func\_\-gradient}!basis.h@{basis.h}}
+\subsubsection[basis\_\-func\_\-gradient]{\setlength{\rightskip}{0pt plus 5cm}int basis\_\-func\_\-gradient (basis\_\-t $\ast$ {\em basis\_\-in}, \/  long int {\em fidx\_\-in}, \/  double $\ast$ {\em loc\_\-in}, \/  double $\ast$ {\em grad\_\-out})}}
+\label{basis_8h_b3cc233488d18d1bb01cac2da5b377f1}
+
+
+basis, func index, input, output 
+
+This function returns the gradient of a basis function given its index in the basis structure given as input and evaluated at {\em loc\_\-in\/}. \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em basis\_\-in}]The basis \item[{\em findex\_\-in}]The function index \item[{\em loc\_\-in}]The point in the standard simplex at which to evaluate the gradient \item[{\em grad\_\-out}]The location into which to deposit the gradient value \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]The value is 0 if no error, otherwise something else (?) \end{Desc}
+
+
+Definition at line 364 of file basis.cpp.\hypertarget{basis_8h_a64bc580d2c29524cfb346fdf75f660f}{
+\index{basis.h@{basis.h}!basis\_\-gen\_\-coeffs@{basis\_\-gen\_\-coeffs}}
+\index{basis\_\-gen\_\-coeffs@{basis\_\-gen\_\-coeffs}!basis.h@{basis.h}}
+\subsubsection[basis\_\-gen\_\-coeffs]{\setlength{\rightskip}{0pt plus 5cm}int basis\_\-gen\_\-coeffs (basis\_\-t $\ast$ {\em basis\_\-in})}}
+\label{basis_8h_a64bc580d2c29524cfb346fdf75f660f}
+
+
+This function is called when the basis is constructed. 
+
+This function assumes that the interpolation nodes have already been loaded into the basis\_\-t structure. \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em basis\_\-in}]The basis into which to load the coefficients \end{description}
+\end{Desc}
+
+
+Definition at line 205 of file basis.cpp.\hypertarget{basis_8h_ed8213a433e1440cd7c2c529fbbafbe8}{
+\index{basis.h@{basis.h}!basis\_\-poly\_\-dim@{basis\_\-poly\_\-dim}}
+\index{basis\_\-poly\_\-dim@{basis\_\-poly\_\-dim}!basis.h@{basis.h}}
+\subsubsection[basis\_\-poly\_\-dim]{\setlength{\rightskip}{0pt plus 5cm}long int basis\_\-poly\_\-dim (long int {\em dim\_\-in}, \/  long int {\em deg\_\-in})}}
+\label{basis_8h_ed8213a433e1440cd7c2c529fbbafbe8}
+
+
+This function just calculates the number of arrangements of deg\_\-in indistinguishable balls into dim\_\-in distinguishable cells. \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em dim\_\-in}]The spatial dimension \item[{\em deg\_\-in}]The maximum degree of the polynomial \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]binomial( dim\_\-in + deg\_\-in, dim\_\-in ) \end{Desc}
+
+
+Definition at line 402 of file basis.cpp.\hypertarget{basis_8h_36d827dbd38020c03ff42e6d3ee0f811}{
+\index{basis.h@{basis.h}!basis\_\-term\_\-index@{basis\_\-term\_\-index}}
+\index{basis\_\-term\_\-index@{basis\_\-term\_\-index}!basis.h@{basis.h}}
+\subsubsection[basis\_\-term\_\-index]{\setlength{\rightskip}{0pt plus 5cm}long int basis\_\-term\_\-index (long int {\em dim\_\-in}, \/  long int {\em deg\_\-in}, \/  long int $\ast$ {\em vec\_\-in})}}
+\label{basis_8h_36d827dbd38020c03ff42e6d3ee0f811}
+
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em dim\_\-in}]The spatial dimension; generally get this from the basis\_\-t struct \item[{\em deg\_\-in}]The maximum polynomial degree desired \item[{\em vec\_\-in}]The exponent whose index is desired \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]The index \end{Desc}
+
+
+Definition at line 133 of file basis.cpp.\hypertarget{basis_8h_d1d717df4c2f0cab9db40d1b4862b4cb}{
+\index{basis.h@{basis.h}!basis\_\-term\_\-integral\_\-simplex@{basis\_\-term\_\-integral\_\-simplex}}
+\index{basis\_\-term\_\-integral\_\-simplex@{basis\_\-term\_\-integral\_\-simplex}!basis.h@{basis.h}}
+\subsubsection[basis\_\-term\_\-integral\_\-simplex]{\setlength{\rightskip}{0pt plus 5cm}double basis\_\-term\_\-integral\_\-simplex (long int {\em dim\_\-in}, \/  long int $\ast$ {\em exp\_\-in})}}
+\label{basis_8h_d1d717df4c2f0cab9db40d1b4862b4cb}
+
+
+A very very nice function for integrating single polynomial terms over simplices. 
+
+I love this function. This function does dimension-generalized (i.e. for any dimension) integration of arbitrary polynomial terms. The dim\_\-in term is the dimension, and the exp\_\-in variable is a pointer to dim\_\-in long integers defining the exponents for each independent variable. 
+
+Definition at line 187 of file basis.cpp.

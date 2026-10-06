@@ -1,0 +1,45 @@
+#include <ltgmap.h>
+#include <stdio.h>
+
+void print_usage()
+{
+	printf( "Usage: mk_mesh [dimension] [nodes file] [output file] [format] [nsteps]\n" );
+}
+
+int main( int argc, char **argv )
+{
+	mesh_t mesh;
+	int i,j,ret,dim;
+	double len,vec[3],tmp[25];
+	FILE *fp;
+
+	if( argc < 6 )
+	{
+		printf( "%s: Too few arguments\n", argv[0] );
+		print_usage();
+		return 0;
+	}
+
+	dim = atoi( argv[1] );
+
+	/* Initialize shit */
+	mesh_init( &mesh, atoi( argv[1] ) );
+	mesh_load_nodes( &mesh, argv[2], 0 );
+	mesh_gen_convex_hull( &mesh );
+	ret = mesh_gen_del_wrap( &mesh ); /* Returns the number of faces not finished */
+	printf( "%d faces not completed\n", ret );
+	mesh_gen_node_simp_map( &mesh );
+
+	/* Do some dynamics-like smoothing */
+	double fcst = 1.2, step = 0.008, err = 2.5e-2, eqlen;
+	int rtmod = 10, smod = rtmod, nstep = atoi( argv[5] );
+	eqlen = 1.2 * mesh_average_edge_length( &mesh );
+	printf( "Using eqlen = %f\n", eqlen );
+	mesh_smooth( &mesh, fcst, eqlen, step, err, rtmod, smod, nstep );
+	mesh_write( &mesh, argv[3], atoi( argv[4] ) );
+
+	/* Free the shit */
+	mesh_free( &mesh );
+
+	return 0;
+}

@@ -1,0 +1,264 @@
+\hypertarget{slinalg_8h}{
+\section{slinalg.h File Reference}
+\label{slinalg_8h}\index{slinalg.h@{slinalg.h}}
+}
+{\tt \#include $<$cmath$>$}\par
+{\tt \#include $<$cstdlib$>$}\par
+{\tt \#include $<$cstdio$>$}\par
+{\tt \#include $<$cassert$>$}\par
+{\tt \#include $<$cstring$>$}\par
+{\tt \#include $<$fstream$>$}\par
+{\tt \#include $<$pthread.h$>$}\par
+{\tt \#include $<$slinalg.h$>$}\par
+{\tt \#include $<$dlinalg.h$>$}\par
+{\tt \#include $<$combinadic.h$>$}\par
+
+
+Include dependency graph for slinalg.h:
+
+This graph shows which files directly or indirectly include this file:\subsection*{Classes}
+\begin{CompactItemize}
+\item 
+struct \hyperlink{structsmatrix__t}{smatrix\_\-t}
+\end{CompactItemize}
+\subsection*{Functions}
+\begin{CompactItemize}
+\item 
+int \hyperlink{slinalg_8h_5407ccf4ac18b0dd74b103795f34f6d8}{\_\-smatrix\_\-insert} (\hyperlink{structsmatrix__t}{smatrix\_\-t} $\ast$, long int, long int, long int, double)
+\begin{CompactList}\small\item\em Used internally only; Does not modify nvals. \item\end{CompactList}\item 
+\hypertarget{slinalg_8h_e2f1f65c3795c6c1f60d8f15437cb9c2}{
+void \hyperlink{slinalg_8h_e2f1f65c3795c6c1f60d8f15437cb9c2}{smatrix\_\-init} (\hyperlink{structsmatrix__t}{smatrix\_\-t} $\ast$, long int, long int)}
+\label{slinalg_8h_e2f1f65c3795c6c1f60d8f15437cb9c2}
+
+\begin{CompactList}\small\item\em Initializes the pointers in \hyperlink{structsmatrix__t}{smatrix\_\-t}. \item\end{CompactList}\item 
+\hypertarget{slinalg_8h_55ca5d381ee0caba31bb72390706ad73}{
+void \hyperlink{slinalg_8h_55ca5d381ee0caba31bb72390706ad73}{smatrix\_\-free} (\hyperlink{structsmatrix__t}{smatrix\_\-t} $\ast$)}
+\label{slinalg_8h_55ca5d381ee0caba31bb72390706ad73}
+
+\begin{CompactList}\small\item\em Frees all pointers in \hyperlink{structsmatrix__t}{smatrix\_\-t}. \item\end{CompactList}\item 
+\hypertarget{slinalg_8h_d6668ecbfbcfe9e547b0d8745c6064dc}{
+void \hyperlink{slinalg_8h_d6668ecbfbcfe9e547b0d8745c6064dc}{smatrix\_\-insert} (\hyperlink{structsmatrix__t}{smatrix\_\-t} $\ast$, long int, long int, double)}
+\label{slinalg_8h_d6668ecbfbcfe9e547b0d8745c6064dc}
+
+\begin{CompactList}\small\item\em Inserts a new entry into an \hyperlink{structsmatrix__t}{smatrix\_\-t} if it doesn't exist or updates it if it does already. \item\end{CompactList}\item 
+\hypertarget{slinalg_8h_f697176da753fee5713a0a05d71a73af}{
+void \hyperlink{slinalg_8h_f697176da753fee5713a0a05d71a73af}{smatrix\_\-entry} (\hyperlink{structsmatrix__t}{smatrix\_\-t} $\ast$, long int, long int, double $\ast$)}
+\label{slinalg_8h_f697176da753fee5713a0a05d71a73af}
+
+\begin{CompactList}\small\item\em Returns the values of an entry. \item\end{CompactList}\item 
+\hypertarget{slinalg_8h_67014c5f8d328788fc2cd2ac0c6018c0}{
+void \hyperlink{slinalg_8h_67014c5f8d328788fc2cd2ac0c6018c0}{smatrix\_\-entry\_\-add} (\hyperlink{structsmatrix__t}{smatrix\_\-t} $\ast$, long int, long int, double)}
+\label{slinalg_8h_67014c5f8d328788fc2cd2ac0c6018c0}
+
+\begin{CompactList}\small\item\em Adds a value to the entry. \item\end{CompactList}\item 
+\hypertarget{slinalg_8h_b77faa62c9e93be51e257af2e2dec286}{
+void \hyperlink{slinalg_8h_b77faa62c9e93be51e257af2e2dec286}{smatrix\_\-entry\_\-subtract} (\hyperlink{structsmatrix__t}{smatrix\_\-t} $\ast$, long int, long int, double)}
+\label{slinalg_8h_b77faa62c9e93be51e257af2e2dec286}
+
+\begin{CompactList}\small\item\em Subtracts a value from the entry. \item\end{CompactList}\item 
+\hypertarget{slinalg_8h_15d681ceebc169c44764c89aa890e455}{
+void \hyperlink{slinalg_8h_15d681ceebc169c44764c89aa890e455}{smatrix\_\-delete} (\hyperlink{structsmatrix__t}{smatrix\_\-t} $\ast$, long int, long int)}
+\label{slinalg_8h_15d681ceebc169c44764c89aa890e455}
+
+\begin{CompactList}\small\item\em Deletes a non-zero entry in the \hyperlink{structsmatrix__t}{smatrix\_\-t}. \item\end{CompactList}\item 
+\hypertarget{slinalg_8h_08409fe987c181417b0be4d80d388343}{
+void \hyperlink{slinalg_8h_08409fe987c181417b0be4d80d388343}{smatrix\_\-print} (\hyperlink{structsmatrix__t}{smatrix\_\-t} $\ast$)}
+\label{slinalg_8h_08409fe987c181417b0be4d80d388343}
+
+\begin{CompactList}\small\item\em Prints a cheap sparse representation of the matrix. \item\end{CompactList}\item 
+\hypertarget{slinalg_8h_d065c420a08f5c14461dc7e81a9a4fab}{
+void \hyperlink{slinalg_8h_d065c420a08f5c14461dc7e81a9a4fab}{smatrix\_\-print\_\-matrix} (\hyperlink{structsmatrix__t}{smatrix\_\-t} $\ast$)}
+\label{slinalg_8h_d065c420a08f5c14461dc7e81a9a4fab}
+
+\begin{CompactList}\small\item\em Prints as a dense matrix (all the damn zeroes). \item\end{CompactList}\item 
+\hypertarget{slinalg_8h_fcbc03b9b032a02f05c83b16c91da56e}{
+void \hyperlink{slinalg_8h_fcbc03b9b032a02f05c83b16c91da56e}{smatrix\_\-details} (\hyperlink{structsmatrix__t}{smatrix\_\-t} $\ast$)}
+\label{slinalg_8h_fcbc03b9b032a02f05c83b16c91da56e}
+
+\begin{CompactList}\small\item\em Prints a small summary of the details of the matrix. \item\end{CompactList}\item 
+\hypertarget{slinalg_8h_bc4d6e6c3688856f8bf22dfa8a262c63}{
+void \hyperlink{slinalg_8h_bc4d6e6c3688856f8bf22dfa8a262c63}{smatrix\_\-print\_\-debug} (\hyperlink{structsmatrix__t}{smatrix\_\-t} $\ast$mat\_\-in)}
+\label{slinalg_8h_bc4d6e6c3688856f8bf22dfa8a262c63}
+
+\begin{CompactList}\small\item\em Prints out a bunch of generally useless extra details. \item\end{CompactList}\item 
+int \hyperlink{slinalg_8h_a8a5d5f1e20f51c0a4d61fc51fb70309}{smatrix\_\-load} (\hyperlink{structsmatrix__t}{smatrix\_\-t} $\ast$, char $\ast$)
+\begin{CompactList}\small\item\em Loads a matrix from a sparse matrix binary file. \item\end{CompactList}\item 
+int \hyperlink{slinalg_8h_d6744b0d813eba2b65453b7cc719400c}{smatrix\_\-save} (\hyperlink{structsmatrix__t}{smatrix\_\-t} $\ast$, char $\ast$)
+\begin{CompactList}\small\item\em Save a matrix to a sparse matrix binary file. \item\end{CompactList}\item 
+void \hyperlink{slinalg_8h_96abd3366a9454210f4a5ce9b3f2febd}{smatrix\_\-transpose} (\hyperlink{structsmatrix__t}{smatrix\_\-t} $\ast$, \hyperlink{structsmatrix__t}{smatrix\_\-t} $\ast$)
+\begin{CompactList}\small\item\em Transposes the data structure. \item\end{CompactList}\item 
+\hypertarget{slinalg_8h_ca7a6e8858d012b88b8c1076e37f988d}{
+void \hyperlink{slinalg_8h_ca7a6e8858d012b88b8c1076e37f988d}{smatrix\_\-multiply} (\hyperlink{structsmatrix__t}{smatrix\_\-t} $\ast$, \hyperlink{structsmatrix__t}{smatrix\_\-t} $\ast$, \hyperlink{structsmatrix__t}{smatrix\_\-t} $\ast$)}
+\label{slinalg_8h_ca7a6e8858d012b88b8c1076e37f988d}
+
+\begin{CompactList}\small\item\em Matrix multiplication. \item\end{CompactList}\item 
+void \hyperlink{slinalg_8h_798256cf4f7113e5e9350a3dbedc30dd}{smatrix\_\-identity} (\hyperlink{structsmatrix__t}{smatrix\_\-t} $\ast$)
+\begin{CompactList}\small\item\em Initializes sparse matrix to identity. \item\end{CompactList}\item 
+\hypertarget{slinalg_8h_71dfb7bc2690937982db7c6a8da3a30f}{
+void \hyperlink{slinalg_8h_71dfb7bc2690937982db7c6a8da3a30f}{smatrix\_\-dspmv} (\hyperlink{structsmatrix__t}{smatrix\_\-t} $\ast$, dvector\_\-t $\ast$, dvector\_\-t $\ast$)}
+\label{slinalg_8h_71dfb7bc2690937982db7c6a8da3a30f}
+
+\begin{CompactList}\small\item\em Matrix vector product for a sparse lefthand side. \item\end{CompactList}\item 
+void \hyperlink{slinalg_8h_4470ab9fe450c9e17670d337507fd2e6}{smatrix\_\-dsplud} (\hyperlink{structsmatrix__t}{smatrix\_\-t} $\ast$)
+\begin{CompactList}\small\item\em Sparse LU decomposition for linear solution. \item\end{CompactList}\item 
+\hypertarget{slinalg_8h_8ccc82da2f87e9de6b027b810e52789b}{
+void \hyperlink{slinalg_8h_8ccc82da2f87e9de6b027b810e52789b}{smatrix\_\-dspfbs} (\hyperlink{structsmatrix__t}{smatrix\_\-t} $\ast$, \hyperlink{structsmatrix__t}{smatrix\_\-t} $\ast$)}
+\label{slinalg_8h_8ccc82da2f87e9de6b027b810e52789b}
+
+\begin{CompactList}\small\item\em Forward/backward substitution solver. \item\end{CompactList}\item 
+void \hyperlink{slinalg_8h_e2d0d5c0684f34a9fb8076f10af73af5}{smatrix\_\-dspfbs\_\-slow} (\hyperlink{structsmatrix__t}{smatrix\_\-t} $\ast$, \hyperlink{structsmatrix__t}{smatrix\_\-t} $\ast$)
+\begin{CompactList}\small\item\em Ditto, but actually VERY SLOW. \item\end{CompactList}\item 
+\hypertarget{slinalg_8h_cc144dde685aee2a961544f4db1982a0}{
+void \hyperlink{slinalg_8h_cc144dde685aee2a961544f4db1982a0}{smatrix\_\-dspfbs\_\-size} (\hyperlink{structsmatrix__t}{smatrix\_\-t} $\ast$, \hyperlink{structsmatrix__t}{smatrix\_\-t} $\ast$, long int, long int)}
+\label{slinalg_8h_cc144dde685aee2a961544f4db1982a0}
+
+\begin{CompactList}\small\item\em Righthand side is not the entire input matrix. \item\end{CompactList}\item 
+\hypertarget{slinalg_8h_fc3b89af4ad96a987b5296c2b4daa0c3}{
+void \hyperlink{slinalg_8h_fc3b89af4ad96a987b5296c2b4daa0c3}{smatrix\_\-dspfbs\_\-dvector} (\hyperlink{structsmatrix__t}{smatrix\_\-t} $\ast$, dvector\_\-t $\ast$)}
+\label{slinalg_8h_fc3b89af4ad96a987b5296c2b4daa0c3}
+
+\begin{CompactList}\small\item\em Righthand side is a \_\-dvector. \item\end{CompactList}\item 
+void \hyperlink{slinalg_8h_08ae6f90a531b7086259d9b70ddb2b0f}{smatrix\_\-dgvrot} (long int, long int, long int, \hyperlink{structsmatrix__t}{smatrix\_\-t} $\ast$, double $\ast$)
+\end{CompactItemize}
+
+
+\subsection{Detailed Description}
+This file contains all of the prototypes for all sparse linear algebra functions implemented in the files prefixed with slinalg\_\-.
+
+\begin{Desc}
+\item[Author:]Ryan Daly {\em \href{mailto:rpdaly@ucsd.edu}{\tt rpdaly@ucsd.edu}\/} \end{Desc}
+\begin{Desc}
+\item[Date:]03/11/2009 \end{Desc}
+
+
+Definition in file \hyperlink{slinalg_8h-source}{slinalg.h}.
+
+\subsection{Function Documentation}
+\hypertarget{slinalg_8h_5407ccf4ac18b0dd74b103795f34f6d8}{
+\index{slinalg.h@{slinalg.h}!\_\-smatrix\_\-insert@{\_\-smatrix\_\-insert}}
+\index{\_\-smatrix\_\-insert@{\_\-smatrix\_\-insert}!slinalg.h@{slinalg.h}}
+\subsubsection[\_\-smatrix\_\-insert]{\setlength{\rightskip}{0pt plus 5cm}int \_\-smatrix\_\-insert ({\bf smatrix\_\-t} $\ast$ {\em mat\_\-in}, \/  long int {\em i\_\-in}, \/  long int {\em j\_\-in}, \/  long int {\em idx\_\-in}, \/  double {\em val\_\-in})}}
+\label{slinalg_8h_5407ccf4ac18b0dd74b103795f34f6d8}
+
+
+Used internally only; Does not modify nvals. 
+
+This function takes the {\em actual\/} {\em index\/} into the row. This is emphasized by using idx\_\-in instead of j\_\-in, which would be a column index rather than an insertion point. User must call binary\_\-search() to get the desired insertion index before calling \hyperlink{slinalg_8h_5407ccf4ac18b0dd74b103795f34f6d8}{\_\-smatrix\_\-insert()}. 
+
+Definition at line 17 of file slinalg\_\-util.cpp.
+
+References smatrix\_\-t::jvec, smatrix\_\-t::lvec, and smatrix\_\-t::mvec.
+
+Referenced by smatrix\_\-dgvrot(), and smatrix\_\-insert().\hypertarget{slinalg_8h_08ae6f90a531b7086259d9b70ddb2b0f}{
+\index{slinalg.h@{slinalg.h}!smatrix\_\-dgvrot@{smatrix\_\-dgvrot}}
+\index{smatrix\_\-dgvrot@{smatrix\_\-dgvrot}!slinalg.h@{slinalg.h}}
+\subsubsection[smatrix\_\-dgvrot]{\setlength{\rightskip}{0pt plus 5cm}void smatrix\_\-dgvrot (long int {\em col\_\-in}, \/  long int {\em row1\_\-in}, \/  long int {\em row2\_\-in}, \/  {\bf smatrix\_\-t} $\ast$ {\em A\_\-in}, \/  double $\ast$ {\em omega\_\-out})}}
+\label{slinalg_8h_08ae6f90a531b7086259d9b70ddb2b0f}
+
+
+Matrix vector multiplication for sparse matrices. 
+
+Definition at line 7 of file slinalg\_\-eigen.cpp.
+
+References \_\-smatrix\_\-insert(), smatrix\_\-t::jvec, smatrix\_\-t::lvec, smatrix\_\-t::mvec, smatrix\_\-t::nvals, smatrix\_\-delete(), smatrix\_\-dgvrot(), smatrix\_\-entry(), and smatrix\_\-insert().
+
+Referenced by smatrix\_\-dgvrot().
+
+Here is the call graph for this function:\hypertarget{slinalg_8h_e2d0d5c0684f34a9fb8076f10af73af5}{
+\index{slinalg.h@{slinalg.h}!smatrix\_\-dspfbs\_\-slow@{smatrix\_\-dspfbs\_\-slow}}
+\index{smatrix\_\-dspfbs\_\-slow@{smatrix\_\-dspfbs\_\-slow}!slinalg.h@{slinalg.h}}
+\subsubsection[smatrix\_\-dspfbs\_\-slow]{\setlength{\rightskip}{0pt plus 5cm}void smatrix\_\-dspfbs\_\-slow ({\bf smatrix\_\-t} $\ast$ {\em mat\_\-in}, \/  {\bf smatrix\_\-t} $\ast$ {\em rhs\_\-in})}}
+\label{slinalg_8h_e2d0d5c0684f34a9fb8076f10af73af5}
+
+
+Ditto, but actually VERY SLOW. 
+
+This function takes as input the matrix output from smatrix\_\-dsplud, which is the lower and upper triangular matrices resulting from the decomposition. 
+
+Definition at line 176 of file slinalg\_\-lnsys.cpp.
+
+References smatrix\_\-t::ncols, smatrix\_\-t::nrows, smatrix\_\-dspfbs\_\-slow(), smatrix\_\-entry(), and smatrix\_\-insert().
+
+Referenced by smatrix\_\-dspfbs\_\-slow().
+
+Here is the call graph for this function:\hypertarget{slinalg_8h_4470ab9fe450c9e17670d337507fd2e6}{
+\index{slinalg.h@{slinalg.h}!smatrix\_\-dsplud@{smatrix\_\-dsplud}}
+\index{smatrix\_\-dsplud@{smatrix\_\-dsplud}!slinalg.h@{slinalg.h}}
+\subsubsection[smatrix\_\-dsplud]{\setlength{\rightskip}{0pt plus 5cm}void smatrix\_\-dsplud ({\bf smatrix\_\-t} $\ast$ {\em mat\_\-in})}}
+\label{slinalg_8h_4470ab9fe450c9e17670d337507fd2e6}
+
+
+Sparse LU decomposition for linear solution. 
+
+This is a sparse LU decomposition algorithm. \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em mat\_\-in}]The input matrix to decompose into lower and upper triangular components \item[{\em mat\_\-out}]The lower and upper triangular decomposition products are both stored in {\tt mat\_\-out} with the exception of the diagonal of the upper triangular component, which is all implicitly ones \end{description}
+\end{Desc}
+
+
+Definition at line 99 of file slinalg\_\-lnsys.cpp.
+
+References smatrix\_\-t::jvec, smatrix\_\-t::lvec, smatrix\_\-t::mvec, smatrix\_\-t::ncols, smatrix\_\-t::nrows, smatrix\_\-dsplud(), smatrix\_\-entry(), and smatrix\_\-insert().
+
+Referenced by smatrix\_\-dsplud().
+
+Here is the call graph for this function:\hypertarget{slinalg_8h_798256cf4f7113e5e9350a3dbedc30dd}{
+\index{slinalg.h@{slinalg.h}!smatrix\_\-identity@{smatrix\_\-identity}}
+\index{smatrix\_\-identity@{smatrix\_\-identity}!slinalg.h@{slinalg.h}}
+\subsubsection[smatrix\_\-identity]{\setlength{\rightskip}{0pt plus 5cm}void smatrix\_\-identity ({\bf smatrix\_\-t} $\ast$ {\em mat\_\-in})}}
+\label{slinalg_8h_798256cf4f7113e5e9350a3dbedc30dd}
+
+
+Initializes sparse matrix to identity. 
+
+Initializes the input sparse matrix to the identity. 
+
+Definition at line 309 of file slinalg\_\-util.cpp.
+
+References smatrix\_\-t::ncols, smatrix\_\-t::nrows, and smatrix\_\-insert().
+
+Here is the call graph for this function:\hypertarget{slinalg_8h_a8a5d5f1e20f51c0a4d61fc51fb70309}{
+\index{slinalg.h@{slinalg.h}!smatrix\_\-load@{smatrix\_\-load}}
+\index{smatrix\_\-load@{smatrix\_\-load}!slinalg.h@{slinalg.h}}
+\subsubsection[smatrix\_\-load]{\setlength{\rightskip}{0pt plus 5cm}int smatrix\_\-load ({\bf smatrix\_\-t} $\ast$ {\em mat\_\-in}, \/  char $\ast$ {\em fn\_\-in})}}
+\label{slinalg_8h_a8a5d5f1e20f51c0a4d61fc51fb70309}
+
+
+Loads a matrix from a sparse matrix binary file. 
+
+This function will exit automatically if the `dimensional parameter' is not equal to 0xff. 
+
+Definition at line 213 of file slinalg\_\-util.cpp.
+
+References smatrix\_\-t::jvec, smatrix\_\-t::lvec, smatrix\_\-t::mvec, smatrix\_\-t::nvals, and smatrix\_\-init().
+
+Here is the call graph for this function:\hypertarget{slinalg_8h_d6744b0d813eba2b65453b7cc719400c}{
+\index{slinalg.h@{slinalg.h}!smatrix\_\-save@{smatrix\_\-save}}
+\index{smatrix\_\-save@{smatrix\_\-save}!slinalg.h@{slinalg.h}}
+\subsubsection[smatrix\_\-save]{\setlength{\rightskip}{0pt plus 5cm}int smatrix\_\-save ({\bf smatrix\_\-t} $\ast$ {\em mat\_\-in}, \/  char $\ast$ {\em fn\_\-in})}}
+\label{slinalg_8h_d6744b0d813eba2b65453b7cc719400c}
+
+
+Save a matrix to a sparse matrix binary file. 
+
+This function stores 0xff as the `dimensional parameter' (the first byte in the binary file) to indicate that the file is a sparse matrix binary file. 
+
+Definition at line 261 of file slinalg\_\-util.cpp.
+
+References smatrix\_\-t::jvec, smatrix\_\-t::lvec, smatrix\_\-t::mvec, smatrix\_\-t::ncols, smatrix\_\-t::nrows, and smatrix\_\-t::nvals.\hypertarget{slinalg_8h_96abd3366a9454210f4a5ce9b3f2febd}{
+\index{slinalg.h@{slinalg.h}!smatrix\_\-transpose@{smatrix\_\-transpose}}
+\index{smatrix\_\-transpose@{smatrix\_\-transpose}!slinalg.h@{slinalg.h}}
+\subsubsection[smatrix\_\-transpose]{\setlength{\rightskip}{0pt plus 5cm}void smatrix\_\-transpose ({\bf smatrix\_\-t} $\ast$ {\em mat\_\-in}, \/  {\bf smatrix\_\-t} $\ast$ {\em mat\_\-out})}}
+\label{slinalg_8h_96abd3366a9454210f4a5ce9b3f2febd}
+
+
+Transposes the data structure. 
+
+This function transposes the data structure, i.e. exchanges rows/columns. This is a pretty fast process for a sparse matrix. 
+
+Definition at line 293 of file slinalg\_\-util.cpp.
+
+References smatrix\_\-t::jvec, smatrix\_\-t::lvec, smatrix\_\-t::mvec, smatrix\_\-t::nrows, and smatrix\_\-insert().
+
+Here is the call graph for this function:

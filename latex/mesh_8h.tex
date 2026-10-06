@@ -1,0 +1,129 @@
+\hypertarget{mesh_8h}{
+\section{mesh.h File Reference}
+\label{mesh_8h}\index{mesh.h@{mesh.h}}
+}
+{\tt \#include $<$iostream$>$}\par
+{\tt \#include $<$iomanip$>$}\par
+{\tt \#include $<$fstream$>$}\par
+{\tt \#include $<$algorithm$>$}\par
+{\tt \#include $<$vector$>$}\par
+{\tt \#include $<$cstdlib$>$}\par
+{\tt \#include $<$cstdio$>$}\par
+{\tt \#include $<$cmath$>$}\par
+{\tt \#include $<$sstream$>$}\par
+{\tt \#include $<$string$>$}\par
+{\tt \#include $<$cstring$>$}\par
+{\tt \#include $<$math.h$>$}\par
+{\tt \#include $<$combinadic.h$>$}\par
+{\tt \#include $<$mesh.h$>$}\par
+{\tt \#include $<$dlinalg.h$>$}\par
+
+
+Include dependency graph for mesh.h:\subsection*{Functions}
+\begin{CompactItemize}
+\item 
+\hypertarget{mesh_8h_8698a9d43abfc76f7b7048236a918751}{
+int \hyperlink{mesh_8h_8698a9d43abfc76f7b7048236a918751}{mesh\_\-load} (mesh\_\-t $\ast$, char $\ast$, int)}
+\label{mesh_8h_8698a9d43abfc76f7b7048236a918751}
+
+\begin{CompactList}\small\item\em Loads a mesh from file; format specified by int argument. \item\end{CompactList}\item 
+\hypertarget{mesh_8h_151e40852299648feae8f587e7414d5e}{
+int \hyperlink{mesh_8h_151e40852299648feae8f587e7414d5e}{mesh\_\-load\_\-nodes} (mesh\_\-t $\ast$, char $\ast$, int)}
+\label{mesh_8h_151e40852299648feae8f587e7414d5e}
+
+\begin{CompactList}\small\item\em Format specified by int. \item\end{CompactList}\item 
+\hypertarget{mesh_8h_8de9d626df8a4622408b18f91a17ae73}{
+int \hyperlink{mesh_8h_8de9d626df8a4622408b18f91a17ae73}{mesh\_\-write} (mesh\_\-t $\ast$, char $\ast$, int)}
+\label{mesh_8h_8de9d626df8a4622408b18f91a17ae73}
+
+\begin{CompactList}\small\item\em Ditto. \item\end{CompactList}\item 
+\hypertarget{mesh_8h_8ab242620a114663e730f37c18cb9c8e}{
+int \hyperlink{mesh_8h_8ab242620a114663e730f37c18cb9c8e}{mesh\_\-write\_\-nodes} (mesh\_\-t $\ast$, char $\ast$, int)}
+\label{mesh_8h_8ab242620a114663e730f37c18cb9c8e}
+
+\begin{CompactList}\small\item\em Ditto. \item\end{CompactList}\item 
+\hypertarget{mesh_8h_096bdef46b7a987f3dbd16f9c902c5b8}{
+int \hyperlink{mesh_8h_096bdef46b7a987f3dbd16f9c902c5b8}{mesh\_\-gen\_\-node\_\-simp\_\-map} (mesh\_\-t $\ast$)}
+\label{mesh_8h_096bdef46b7a987f3dbd16f9c902c5b8}
+
+\begin{CompactList}\small\item\em Fills in data needed by. \item\end{CompactList}\item 
+int \hyperlink{mesh_8h_fc7129cd4f5047c33de531cdbe994c2c}{mesh\_\-gen\_\-init\_\-simp} (mesh\_\-t $\ast$, long int)
+\begin{CompactList}\small\item\em This is a shitty function; don't use it unless absolutely necessary. \item\end{CompactList}\item 
+int \hyperlink{mesh_8h_8d6df2f298eb7b27b1fd53870c72e71e}{mesh\_\-gen\_\-convex\_\-hull} (mesh\_\-t $\ast$)
+\begin{CompactList}\small\item\em Generate the convex hull of faces on a vertex set. \item\end{CompactList}\item 
+\hypertarget{mesh_8h_602298e9c3cdb3efad1adcba21bfb854}{
+int \hyperlink{mesh_8h_602298e9c3cdb3efad1adcba21bfb854}{mesh\_\-gen\_\-del\_\-wrap} (mesh\_\-t $\ast$)}
+\label{mesh_8h_602298e9c3cdb3efad1adcba21bfb854}
+
+\begin{CompactList}\small\item\em Create a Delaunay mesh from a set of vertices. \item\end{CompactList}\item 
+\hypertarget{mesh_8h_dfe9945ccb2b02b4daee5cfd2972e090}{
+double \hyperlink{mesh_8h_dfe9945ccb2b02b4daee5cfd2972e090}{mesh\_\-quality} (mesh\_\-t $\ast$)}
+\label{mesh_8h_dfe9945ccb2b02b4daee5cfd2972e090}
+
+\begin{CompactList}\small\item\em Calculate the quality of the mesh. \item\end{CompactList}\item 
+\hypertarget{mesh_8h_d7804747ce2f7b19570f65243eea836b}{
+int \hyperlink{mesh_8h_d7804747ce2f7b19570f65243eea836b}{mesh\_\-check\_\-topology} (mesh\_\-t $\ast$)}
+\label{mesh_8h_d7804747ce2f7b19570f65243eea836b}
+
+\begin{CompactList}\small\item\em Check for bad elements. \item\end{CompactList}\item 
+\hypertarget{mesh_8h_59c6b3912222692643eaf3dd3a078dbd}{
+int \hyperlink{mesh_8h_59c6b3912222692643eaf3dd3a078dbd}{mesh\_\-del\_\-unf\_\-face} (mesh\_\-t $\ast$, long int)}
+\label{mesh_8h_59c6b3912222692643eaf3dd3a078dbd}
+
+\begin{CompactList}\small\item\em Delete a face from ufaces at given position. \item\end{CompactList}\item 
+\hypertarget{mesh_8h_22173fda1f35a5a5ff5cc8698ac92f9f}{
+int \hyperlink{mesh_8h_22173fda1f35a5a5ff5cc8698ac92f9f}{mesh\_\-app\_\-unf\_\-face} (mesh\_\-t $\ast$, long int $\ast$)}
+\label{mesh_8h_22173fda1f35a5a5ff5cc8698ac92f9f}
+
+\begin{CompactList}\small\item\em Appends a face to ufaces. \item\end{CompactList}\item 
+\hypertarget{mesh_8h_969d608a1c17c222b94f56f85b3d1043}{
+long int \hyperlink{mesh_8h_969d608a1c17c222b94f56f85b3d1043}{mesh\_\-ufaces\_\-index} (mesh\_\-t $\ast$, long int $\ast$)}
+\label{mesh_8h_969d608a1c17c222b94f56f85b3d1043}
+
+\begin{CompactList}\small\item\em Returns index of face of interest. \item\end{CompactList}\item 
+int \hyperlink{mesh_8h_3304755ab0b8bb1c126c6c0fd642a693}{mesh\_\-vert\_\-surf\_\-test\_\-dim} (long int, double $\ast$, double $\ast$)
+\end{CompactItemize}
+
+
+\subsection{Detailed Description}
+\begin{Desc}
+\item[Author:]Ryan Daly {\em \href{mailto:rpdaly@ucsd.edu}{\tt rpdaly@ucsd.edu}\/} \end{Desc}
+\begin{Desc}
+\item[Date:]03/04/2009 This file contains the definition of the mesh\_\-t struct which contains all mesh information. It also contains constructors for all of the functions required to manipulate meshes, including adding nodes and simplices. \end{Desc}
+
+
+Definition in file \hyperlink{mesh_8h-source}{mesh.h}.
+
+\subsection{Function Documentation}
+\hypertarget{mesh_8h_8d6df2f298eb7b27b1fd53870c72e71e}{
+\index{mesh.h@{mesh.h}!mesh\_\-gen\_\-convex\_\-hull@{mesh\_\-gen\_\-convex\_\-hull}}
+\index{mesh\_\-gen\_\-convex\_\-hull@{mesh\_\-gen\_\-convex\_\-hull}!mesh.h@{mesh.h}}
+\subsubsection[mesh\_\-gen\_\-convex\_\-hull]{\setlength{\rightskip}{0pt plus 5cm}int mesh\_\-gen\_\-convex\_\-hull (mesh\_\-t $\ast$ {\em mesh\_\-in})}}
+\label{mesh_8h_8d6df2f298eb7b27b1fd53870c72e71e}
+
+
+Generate the convex hull of faces on a vertex set. 
+
+This algorithm fills the mesh\_\-in-$>$ufaces (unfinished faces array) with faces comprising a convex hull of the nodes in mesh\_\-in-$>$vertx. The variable dirv\_\-in contains a vector normal to the plane to use to determine the initial vertex lying on the hull (which is required for the gift wrapping algorithm). 
+
+Definition at line 380 of file mesh.cpp.\hypertarget{mesh_8h_fc7129cd4f5047c33de531cdbe994c2c}{
+\index{mesh.h@{mesh.h}!mesh\_\-gen\_\-init\_\-simp@{mesh\_\-gen\_\-init\_\-simp}}
+\index{mesh\_\-gen\_\-init\_\-simp@{mesh\_\-gen\_\-init\_\-simp}!mesh.h@{mesh.h}}
+\subsubsection[mesh\_\-gen\_\-init\_\-simp]{\setlength{\rightskip}{0pt plus 5cm}int mesh\_\-gen\_\-init\_\-simp (mesh\_\-t $\ast$ {\em mesh\_\-in}, \/  long int {\em nidx\_\-in})}}
+\label{mesh_8h_fc7129cd4f5047c33de531cdbe994c2c}
+
+
+This is a shitty function; don't use it unless absolutely necessary. 
+
+This function generates an initial simplex on which to build the mesh and which includes the node with index nidx\_\-in. It searches for an empty circumcircle involving vertex nidx\_\-in. 
+
+Definition at line 291 of file mesh.cpp.\hypertarget{mesh_8h_3304755ab0b8bb1c126c6c0fd642a693}{
+\index{mesh.h@{mesh.h}!mesh\_\-vert\_\-surf\_\-test\_\-dim@{mesh\_\-vert\_\-surf\_\-test\_\-dim}}
+\index{mesh\_\-vert\_\-surf\_\-test\_\-dim@{mesh\_\-vert\_\-surf\_\-test\_\-dim}!mesh.h@{mesh.h}}
+\subsubsection[mesh\_\-vert\_\-surf\_\-test\_\-dim]{\setlength{\rightskip}{0pt plus 5cm}int mesh\_\-vert\_\-surf\_\-test\_\-dim (long int {\em dim\_\-in}, \/  double $\ast$ {\em point\_\-in}, \/  double $\ast$ {\em face\_\-in})}}
+\label{mesh_8h_3304755ab0b8bb1c126c6c0fd642a693}
+
+
+This function returns 1 if point\_\-in lies to the RIGHT of face\_\-in, which is defined by dim\_\-in points. 
+
+Definition at line 896 of file mesh.cpp.

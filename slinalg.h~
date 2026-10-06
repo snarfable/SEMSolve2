@@ -1,0 +1,151 @@
+#ifndef SEMSOLVE2_SLINALG_H
+#define SEMSOLVE2_SLINALG_H
+
+/**
+ * This file contains all of the prototypes for all sparse linear algebra
+ * functions implemented in the files prefixed with slinalg_.
+ * \file slinalg.h
+ * \author Ryan Daly
+ * \em rpdaly@ucsd.edu
+ * \date 03/11/2009
+ */
+
+// #include <combinadic.h>		/* For the binary search functions */
+// #include <dlinalg.h>
+// 
+// typedef struct
+// {
+// 	long int	nvals;		///< Stores the number of non-zero entries in the matrix
+// 	long int	nrows;		///< The number of rows
+// 	long int	ncols;		///< The number of columns
+// 	double		**mvec;		///< Stores the actual non-zero entries
+// 	long int	**jvec;		///< jvec[i][j] is the column of the value stored at mvec[i][j]
+// 	long int	*lvec;		///< lvec[i] is the number of non-zero entries in row i
+// } smatrix_t;
+// 
+// /*
+//  * Utility functions
+//  */
+// void	smatrix_init( smatrix_t *, long int, long int );
+// void	smatrix_free( smatrix_t * );
+// int	smatrix_load( smatrix_t *, char * );
+// int	smatrix_save( smatrix_t *, char * );
+// void	smatrix_insert( smatrix_t *, long int, long int, double );				///< Inserts a new entry into an smatrix_t if it doesn't exist or updates it if it does already
+// void	smatrix_entry( smatrix_t *, long int, long int, double * );				///< Returns the values of an entry
+// void	smatrix_entry_add( smatrix_t *, long int, long int, double );				///< Adds a value to the entry
+// void	smatrix_entry_subtract( smatrix_t *, long int, long int, double );			///< Subtracts a value from the entry
+// void	smatrix_delete( smatrix_t *, long int, long int );					///< Deletes a non-zero entry in the smatrix_t
+// void	smatrix_print( smatrix_t * );								///< Prints a cheap sparse representation of the matrix
+// 
+// /*
+//  * Linear algebra
+//  */
+// void	smatrix_lu_dcmp( smatrix_t * );
+// void	smatrix_lu_dcmp_bl( smatrix_t * );
+// void	smatrix_fb_sub_vrhs( smatrix_t *, dvector_t * );
+// void	smatrix_fb_sub_mrhs( smatrix_t *, smatrix_t * );
+// void	smatrix_chol_dcmp( smatrix_t * );
+
+#include <cmath>
+#include <cstdlib>
+#include <cstdio>
+#include <cassert>
+#include <cstring>
+#include <fstream>
+#include <pthread.h>
+#include <slinalg.h>
+#include <dlinalg.h>
+#include <combinadic.h>
+
+#define SMATRIX_USE_MPI 0
+#define SMATRIX_ZERO_THRESHOLD 1.0e-6
+#define SMATRIX_EIGENVALUE_MAX_ITS 500000
+
+/**
+ * This is a slightly modified version of the Yale Sparse Matrix Format.
+ * The typical Yale format would, in the place of double **mvec, have
+ * a double *A type and an additional array, int *IA, which stores the index into
+ * A at which row i would begin. For example, A[IA[i]] is the first non-zero entry in
+ * row i of the matrix stored in A. Instead of this, I have used a double pointer
+ * to represent variable-length rows in a matrix. It is equivalent to if not better
+ * than using the additional IA vector because it takes a tiny amount of pointer
+ * arithmetic out of the act of dereferencing a value in the matrix. The double
+ * *lvec variable is such that lvec[i] is the number of non-zero entries in row
+ * i of the matrix.
+ * \param nvals Stores the number of non-zero entries in the matrix
+ * \param nrows The number of rows
+ * \param ncols The number of columns
+ * \param mvec Stores the actual non-zero entries; mvec[i][j] is the value
+ * 		of row i, column jvec[i][j]
+ * \param jvec jvec[i][j] is the column of the value stored at mvec[i][j]
+ * \param lvec lvec[i] is the number of non-zero entries in row i
+ */
+typedef struct
+{
+	long int	nvals;		///< Stores the number of non-zero entries in the matrix
+	long int	nrows;		///< The number of rows
+	long int	ncols;		///< The number of columns
+	double		**mvec;		///< Stores the actual non-zero entries
+	long int	**jvec;		///< jvec[i][j] is the column of the value stored at mvec[i][j]
+	long int	*lvec;		///< lvec[i] is the number of non-zero entries in row i
+} smatrix_t;
+
+int	_smatrix_insert( smatrix_t *, long int, long int, long int, double );			///< Used internally only; Does not modify nvals
+void	smatrix_init( smatrix_t *, long int, long int );					///< Initializes the pointers in smatrix_t
+void	smatrix_free( smatrix_t * );								///< Frees all pointers in smatrix_t
+void	smatrix_insert( smatrix_t *, long int, long int, double );				///< Inserts a new entry into an smatrix_t if it doesn't exist or updates it if it does already
+void	smatrix_entry( smatrix_t *, long int, long int, double * );				///< Returns the values of an entry
+void	smatrix_entry_add( smatrix_t *, long int, long int, double );				///< Adds a value to the entry
+void	smatrix_entry_subtract( smatrix_t *, long int, long int, double );			///< Subtracts a value from the entry
+void	smatrix_delete( smatrix_t *, long int, long int );					///< Deletes a non-zero entry in the smatrix_t
+void	smatrix_print( smatrix_t * );								///< Prints a cheap sparse representation of the matrix
+void	smatrix_print_matrix( smatrix_t * );							///< Prints as a dense matrix (all the damn zeroes)
+void	smatrix_details( smatrix_t * );								///< Prints a small summary of the details of the matrix
+void	smatrix_print_debug( smatrix_t *mat_in );						///< Prints out a bunch of generally useless extra details
+int	smatrix_load( smatrix_t *, char * );							///< Loads a matrix from a sparse matrix binary file
+int	smatrix_save( smatrix_t *, char * );							///< Save a matrix to a sparse matrix binary file
+void	smatrix_transpose( smatrix_t *, smatrix_t * );						///< Transposes the data structure
+void	smatrix_multiply( smatrix_t *, smatrix_t *, smatrix_t * );				///< Matrix multiplication
+void	smatrix_identity( smatrix_t * );							///< Initializes sparse matrix to identity
+
+/*
+ * These functions are now in combinadic.h
+ */
+// int	binary_search( long int *, long int *, long int *, long int *, long int * );		///< Does a general and simple binary search for a specified value in the given array
+// int	binary_search_range( long int *, long int *, long int *, long int *, long int *, long int *, long int * );
+// int	binary_closest( long int *, long int *, long int *, long int *, long int * );
+// int	binary_closest_range( long int *, long int *, long int *, long int *, long int *, long int *, long int * );
+
+/*
+ * Linear System Functions
+ */
+void	smatrix_convert_to_dense( smatrix_t *, dvector_t * );
+void	smatrix_shift( smatrix_t *, double );
+void	smatrix_dspmv( smatrix_t *, dvector_t *, dvector_t * );					///< Matrix vector product for a sparse lefthand side
+void	smatrix_dspmv_sparse( smatrix_t *, smatrix_t *, long int, smatrix_t *, long int );
+void	smatrix_dspmv_sparse_dvector( smatrix_t *, smatrix_t *, long int, dvector_t * );
+void	smatrix_lin_com( double, smatrix_t *, long int, double, smatrix_t *, long int, smatrix_t *, long int );
+double	smatrix_col_dot_prod( smatrix_t *, long int, smatrix_t *, long int );
+double	smatrix_col_dot_prod_dvector( smatrix_t *, long int, dvector_t * );
+void	smatrix_dsplud( smatrix_t * );								///< Sparse LU decomposition for linear solution
+void	smatrix_dspfbs( smatrix_t *, smatrix_t * );						///< Forward/backward substitution solver
+void	smatrix_dspfbs_slow( smatrix_t *, smatrix_t * );					///< Ditto, but actually VERY SLOW
+void	smatrix_dspfbs_size( smatrix_t *, smatrix_t *, long int, long int );			///< Righthand side is not the entire input matrix
+void	smatrix_dspfbs_dvector( smatrix_t *, dvector_t * );					///< Righthand side is a _dvector
+
+/*
+ * Eigensystem Functions
+ */
+void	smatrix_dgvrot( long int, long int, long int, smatrix_t *, double * );
+void	_smatrix_dgvrotr( long int, long int, smatrix_t *, double * );
+void	smatrix_dgvdlr( long int *, long int *, smatrix_t *, double * );
+void	smatrix_dgvrotr( long int, long int *, smatrix_t *, double * );
+void	smatrix_dgvtrn( long int, long int, long int, smatrix_t *, double * );
+void	smatrix_dgvhrd( smatrix_t *, double * );
+void	smatrix_darkrd_dense( int, smatrix_t *, dvector_t *, dmatrix_t *, dmatrix_t * );
+void	smatrix_darkrd_sparse( int, smatrix_t *, dvector_t *, smatrix_t *, smatrix_t * );
+void	smatrix_darkrd_sparse_inv_prod( int, smatrix_t *, smatrix_t *, dvector_t *, smatrix_t *, smatrix_t * );
+void	smatrix_dgvqrd( smatrix_t *, smatrix_t * );
+void	smatrix_eigen_solve( smatrix_t * );
+
+#endif

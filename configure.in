@@ -1,0 +1,35 @@
+#                                               -*- Autoconf -*-
+# Process this file with autoconf to produce a configure script.
+
+AC_PREREQ(2.61)
+AC_INIT(semsolve, 2.0, rpdaly@ucsd.edu)
+AM_INIT_AUTOMAKE(foreign)
+AC_CONFIG_SRCDIR([dlinalg_lnsys.cpp])
+AC_CONFIG_HEADER([config.h])
+
+# Checks for programs.
+AC_PROG_CXX
+AC_PROG_CC
+AC_PROG_LEX
+AC_PROG_YACC
+AM_PROG_AS
+AC_PROG_RANLIB
+
+# Checks for libraries.
+PKG_PROG_PKG_CONFIG
+PKG_CHECK_MODULES([LIBXML2], [libxml-2.0])
+CPPFLAGS="$CPPFLAGS $LIBXML2_CFLAGS"
+
+# Checks for header files.
+AC_HEADER_STDC
+AC_CHECK_HEADERS([stdlib.h string.h strings.h unistd.h])
+
+# Checks for typedefs, structures, and compiler characteristics.
+
+# Checks for library functions.
+AC_FUNC_MALLOC
+AC_FUNC_REALLOC
+AC_CHECK_FUNCS([pow])
+
+AC_CONFIG_FILES([Makefile])
+AC_OUTPUT

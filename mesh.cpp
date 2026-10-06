@@ -1,0 +1,1100 @@
+#include <mesh.h>
+
+static double GLOBAL_TEMP[SEMSOLVE2_ALLOC_DATA];
+
+void mesh_init( mesh_t *mesh_in, long int dim_in )
+{
+	/* Set accounting information */
+	mesh_in->dim = dim_in;
+	mesh_in->nvert = 0;
+	mesh_in->nsimp = 0;
+	mesh_in->nunff = 0;
+	mesh_in->nhulf = 0;
+
+	/* Set all pointers to NULL */
+	mesh_in->vertx = NULL;
+	mesh_in->vtype = NULL;
+	mesh_in->simpx = NULL;
+	mesh_in->ftype = NULL;
+	mesh_in->ufaces = NULL;
+	mesh_in->hfaces = NULL;
+	mesh_in->nsmap = NULL;
+	mesh_in->nssize = NULL;
+}
+
+void mesh_free( mesh_t *mesh_in )
+{
+	
+}
+
+int mesh_load( mesh_t *mesh_in, char *fname_in, int fmt_in )
+{
+	long int nv = 0,*ltmp;
+	int count = 0,step;
+	int i,j,num,pos,qos,opn=0;
+	char cstr[256];
+	std::istringstream tmp,ump;
+	std::ifstream input;
+	std::string str,ttr,utr,dtr;
+	std::vector< double > tdv;
+	std::vector< int > tiv;
+	double tdbl,*dtmp;
+
+	switch(fmt_in)
+	{
+		case 0:
+			break;
+		case 1:	/* FETK .msh format */
+			input.open( fname_in, std::ios::in );
+			if( input.fail() )
+				return -1;
+			while( !input.eof() )
+			{
+				input.getline( cstr, 256 );
+				str.assign( cstr );
+				pos = str.find_first_of( "%" );
+				str = str.substr( 0, pos ); // filter out the comments
+		
+				pos = str.find_first_of( "=" );
+				if( pos == std::string::npos )
+					continue;
+		
+				// read equation garbage
+				ttr = str.substr( 0, pos );
+				qos = ttr.find_first_not_of( " \t\n" );
+				num = ttr.find_last_not_of( " \t\n" );
+				ttr = ttr.substr( qos, num - qos + 1 );
+				utr = str.substr( pos + 1, str.length() - pos );
+				ump.str( utr );
+		
+				if( ttr == "vert" )
+				{
+					// read entire section between brackets into single string
+					dtr += utr;
+					while( utr.find_last_of( "]" ) == std::string::npos )
+					{
+						input.getline( cstr, 256 );
+						utr.assign( cstr );
+						pos = utr.find_first_of( "%" );
+						if(pos!=std::string::npos)
+							utr = utr.substr( 0, pos ); // filter out comments
+						dtr += " " + utr;
+					} // now dtr is full set of vertices
+					dtr += " " + utr;
+					pos = dtr.find_first_of( "[" );
+					num = dtr.find_last_of( "]" );
+					if( pos == std::string::npos || num == std::string::npos )
+						return -1;
+					dtr = dtr.substr( pos + 1, num - pos - 1 );
+					ump.str( dtr );
+					step = mesh_in->nvert / 50;
+					if( mesh_in->vertx != NULL )
+						free( mesh_in->vertx );
+					dtmp = (double*) malloc( mesh_in->nvert * mesh_in->dim * sizeof(double) );
+					if( dtmp == NULL )
+						return -1;
+					mesh_in->vertx = dtmp;
+					for(i=0;i<mesh_in->nvert;i++)
+					{
+						ump >> num;
+						ump >> num;
+						tdv.clear();
+						for(j=0;j<mesh_in->dim;j++)
+							ump >> mesh_in->vertx[i*mesh_in->dim+j];
+					}
+				}
+				if( ttr == "simp" )
+				{
+					dtr.erase();
+					dtr += utr;
+					while( utr.find_last_of( "]" ) == std::string::npos )
+					{
+						input.getline( cstr, 256 );
+						utr.assign( cstr );
+						pos = utr.find_first_of( "%" );
+						if(pos!=std::string::npos)
+							utr = utr.substr( 0, pos ); // filter out comments
+						dtr += " " + utr;
+					} // now dtr is full set of simplices
+					dtr += " " + utr;
+					pos = dtr.find_first_of( "[" );
+					num = dtr.find_last_of( "]" );
+					if( pos == std::string::npos || num == std::string::npos )
+						return -1;
+					dtr = dtr.substr( pos + 1, num - pos - 1 );
+					ump.str( dtr );
+					step = mesh_in->nsimp / 50;
+					if( mesh_in->simpx != NULL )
+						free( mesh_in->simpx );
+					ltmp = (long int*) malloc( mesh_in->nsimp * (mesh_in->dim+1) * sizeof(long int) );
+					if( ltmp == NULL )
+						return -1;
+					mesh_in->simpx = ltmp;
+					for(i=0;i<mesh_in->nsimp;i++)
+					{
+						ump >> num;
+						ump >> num;
+						ump >> num;
+						for(j=0;j<mesh_in->dim+1;j++)
+							ump >> num;
+						for(j=0;j<mesh_in->dim+1;j++)
+							ump >> mesh_in->simpx[i*(mesh_in->dim+1)+j];
+					}
+		
+				}
+				if( ttr == "dim" )
+				{
+					ump >> mesh_in->dim;
+				}
+				if( ttr == "vertices" )
+				{
+					ump >> mesh_in->nvert;
+				}
+				if( ttr == "simplices" )
+				{
+					ump >> mesh_in->nsimp;
+				}
+			}
+			input.close();
+			return 0;
+
+			break;
+		default:
+			break;
+	}
+}
+
+int mesh_load_nodes( mesh_t *mesh_in, char *file_in, int fmt_in )
+{
+	int i,j,vdim,nvec;
+	std::ifstream fp;
+	switch(fmt_in) /* File format switch */
+	{
+		case 0:	/* Human-legible ascii */
+			fp.open( file_in, std::ios::in );
+			if( fp.fail() )
+				return 1;
+			fp >> vdim;
+			fp >> nvec;
+			mesh_in->vertx = (double*) malloc( vdim * nvec * sizeof(double) );
+			for(i=0;i<nvec;i++)
+				for(j=0;j<vdim;j++)
+					fp >> mesh_in->vertx[i*vdim+j];
+			fp.close();
+			mesh_in->dim = vdim;
+			mesh_in->nvert = nvec;
+			break;
+		case 1:	/* Binary format */
+			break;
+		case 2:	/* PDB format; using PDBFile and PDBRecord classes */
+			break;
+		default:
+			return -1;
+	}
+	return 0;
+}
+
+int mesh_write( mesh_t *mesh_in, char *file_in, int fmt_in )
+{
+	int i,j;
+	FILE *fp;
+	switch(fmt_in)
+	{
+		case 0:	/* Gmsh .msh format */
+			fp = fopen( file_in, "w" );
+			if( fp == NULL )
+				return 1;
+
+			/* $MeshFormat */
+			fprintf( fp, "$MeshFormat\n" );
+			fprintf( fp, "2 0 8\n" );
+			fprintf( fp, "$EndMeshFormat\n" );
+
+			/* $Nodes */
+			fprintf( fp, "$Nodes\n" );
+			fprintf( fp, "%d\n", mesh_in->nvert );
+			for(i=0;i<mesh_in->nvert;i++)
+			{
+				fprintf( fp, "%d ", i + 1 );
+				for(j=0;j<mesh_in->dim;j++)
+					fprintf( fp, "%f ", mesh_in->vertx[i*mesh_in->dim+j] );
+				fprintf( fp, "\n" );
+			}
+			fprintf( fp, "$EndNodes\n" );
+
+			/* $Elements */
+			fprintf( fp, "$Elements\n" );
+			fprintf( fp, "%d\n", mesh_in->nsimp );
+			for(i=0;i<mesh_in->nsimp;i++)
+			{
+				fprintf( fp, "%d ", i + 1 );
+				fprintf( fp, "4 3 0 0 0 " );
+				for(j=0;j<mesh_in->dim+1;j++)
+					fprintf( fp, "%d ", mesh_in->simpx[i*(mesh_in->dim+1)+j] + 1 ); /* Add 1 so that starts at 1, not 0 */
+				fprintf( fp, "\n" );
+			}
+			fprintf( fp, "$EndElements\n" );
+			fclose( fp );
+			break;
+		case 1:	/* FETK .msh format */
+			fp = fopen( file_in, "w" );
+			if( fp == NULL )
+				return 1;
+
+			/* Dimension and size info */
+			fprintf( fp, "mcsf_begin=1;\n" );
+			fprintf( fp, "dim=%d;\n", mesh_in->dim );
+			fprintf( fp, "dimii=%d;\n", mesh_in->dim );
+			fprintf( fp, "vertices=%d;\n", mesh_in->nvert );
+			fprintf( fp, "simplices=%d;\n", mesh_in->nsimp );
+
+			/* Writing vert section */
+			fprintf( fp, "vert=[\n" );
+			for(i=0;i<mesh_in->nvert;i++)
+			{
+				fprintf( fp, "%d 0 ", i );
+				for(j=0;j<mesh_in->dim;j++)
+					fprintf( fp, "%f ", mesh_in->vertx[i*mesh_in->dim+j] );
+				fprintf( fp, "\n" );
+			}
+			fprintf( fp, "];\n" );
+
+			/* Writing simp section */
+			fprintf( fp, "simp=[\n" );
+			for(i=0;i<mesh_in->nsimp;i++)
+			{
+				fprintf( fp, "%d 0 0 ", i );
+				for(j=0;j<mesh_in->dim+1;j++)
+					fprintf( fp, "0 " );
+				for(j=0;j<mesh_in->dim+1;j++)
+					fprintf( fp, "%d ", mesh_in->simpx[i*(mesh_in->dim+1)+j] );
+				fprintf( fp, "\n" );
+			}
+			fprintf( fp, "];\n" );
+
+			/* A weird way to end the file? */
+			fprintf( fp, "mcsf_end=1;\n" );
+			fclose( fp );
+			break;
+		default:
+			return -1;
+			break;
+	}
+	return 0;
+}
+
+/**
+ * This function generates an initial simplex on which to
+ * build the mesh and which includes the node with index nidx_in.
+ * It searches for an empty circumcircle involving vertex nidx_in.
+ */
+int mesh_gen_init_simp( mesh_t *mesh_in, long int nidx_in )
+{
+	long int i,j,k,itmp;
+	long int dim = mesh_in->dim;
+	long int indx[mesh_in->nvert];	/* Contains the indices of the dim closest nodes */
+	long int ptr[dim+1];
+	double dist[mesh_in->nvert];	/* Contains the distance of mesh_in->vertx[clos[dim]] from nidx_in */
+	double dtmp;
+	int fnd,csp;
+	for(i=0;i<mesh_in->nvert;i++)
+	{
+		dist[i] = 0.0;
+		for(j=0;j<dim;j++)
+			dist[i] += pow( mesh_in->vertx[i*dim+j] - mesh_in->vertx[nidx_in*dim+j], 2.0 );
+		indx[i] = i;
+	}
+	for(i=mesh_in->nvert-1;i>=0;i--)
+	{
+		for(j=0;j<i;j++)
+		{
+			if( dist[j] > dist[j+1] )
+			{
+				dtmp = dist[j];
+				itmp = indx[j];
+				dist[j] = dist[j+1];
+				indx[j] = indx[j+1];
+				dist[j+1] = dtmp;
+				indx[j+1] = itmp;
+			}
+		}
+	}
+
+	/* Now get the final node which is above the plane mesh_in->simpx[0:2] and which has no node in circumsphere */
+	csp = 0;
+	for(i=0;i<mesh_in->nvert;i++)
+	{
+		if( std::find( indx, indx + mesh_in->dim, i ) != indx + mesh_in->dim )
+			continue;
+		fnd = 0;
+		indx[mesh_in->dim] = i; // The (dim+1)th node to finish the dim-simplex
+		for(j=0;j<mesh_in->nvert;j++)
+		{
+			if( std::find( indx, indx + mesh_in->dim + 1, j ) != indx + mesh_in->dim + 1 )
+				continue;
+			dtmp = mesh_vert_in_circsph_vert( mesh_in, mesh_in->vertx + j*(mesh_in->dim), indx );
+			if( dtmp < 0.0 )
+			{
+				fnd = 1;
+				break;
+			}
+		}
+		if( fnd == 0 ) // Then the simplex in indx has no other vertex inside its circumsphere
+		{
+			csp = 1;
+			break; // indx already contains the dim vertex ids of a simplex
+		}
+	}
+
+	if( csp != 1 )
+		return -1; // Means that could not find an initial simplex
+
+	/* Add the actual simplex stored in indx */
+	mesh_in->nsimp = 1;
+	mesh_in->simpx = (long int*) realloc( mesh_in->simpx, ( dim + 1 ) * sizeof(long int) );
+	for(i=0;i<dim+1;i++) // Just the first mesh_in->dim of them
+		mesh_in->simpx[i] = indx[i];
+
+	/* Now add faces to ufaces */
+	mesh_in->ufaces = (long int*) realloc( mesh_in->ufaces, ( dim + 1 ) * ( dim + 1 ) * sizeof(long) );
+	combinadic_init( dim + 1, dim, ptr );
+	for(i=0,k=dim;i<binomial(dim+1,dim);i++,k--)
+	{
+		for(j=0;j<dim;j++)
+			mesh_in->ufaces[i*(dim+1)+j] = indx[ptr[j]];
+		mesh_in->ufaces[i*(dim+1)+dim] = indx[k];
+		++mesh_in->nunff;
+		combinadic_next( dim + 1, dim, ptr );
+	}
+
+	return 0;
+}
+
+/**
+ * This algorithm fills the mesh_in->ufaces (unfinished faces array)
+ * with faces comprising a convex hull of the nodes in mesh_in->vertx.
+ * The variable dirv_in contains a vector normal to the plane 
+ * to use to determine the initial vertex lying on the hull (which is
+ * required for the gift wrapping algorithm).
+ */
+int mesh_gen_convex_hull( mesh_t *mesh_in )
+{
+	long int i,j,k,m,n,min[mesh_in->dim+1],tfc[mesh_in->dim],cmb[mesh_in->dim],dmb[mesh_in->dim],emb[mesh_in->dim];
+	double sum,dmin;
+	int ck,cur,ret;
+	double face[mesh_in->dim*mesh_in->dim];
+	list_t elist,flist;
+	for(i=0;i<mesh_in->dim;i++)
+	{
+		/* For coordinates 0 through i, find x such that all vertices
+			lie to the right of simplex (v0,...,vi) */
+		if( i == 0 )
+		{
+			for(j=0;j<mesh_in->nvert;j++)
+			{
+				if( mesh_in->vertx[j*mesh_in->dim] < dmin || j == 0 )
+				{
+					dmin = mesh_in->vertx[j*mesh_in->dim];
+					min[0] = j;
+				}
+			}
+		}
+		else
+		{
+			/* Try to find a vertex with no nodes to its one side */
+			for(j=0;j<mesh_in->nvert;j++)
+			{
+				if( simple_find_long( j, i, min ) != -1 )
+					continue;
+				min[i] = j;
+				for(m=0;m<i+1;m++)
+					for(n=0;n<i+1;n++)
+						face[m*(i+1)+n] = mesh_in->vertx[min[m]*mesh_in->dim+n];
+				ck = 0;
+				for(k=0;k<mesh_in->nvert;k++)
+				{
+					/* Make sure we don't choose anything in min again */
+					if( k == j || simple_find_long( k, i, min ) != -1 )
+						continue;
+					dmin = mesh_simplex_determ( i + 1, mesh_in->vertx + k * mesh_in->dim, face );
+					ret = ( dmin > 0.0 ? 1 : 0 );
+					if( k == 0 )
+					{
+						cur = ret;
+						continue;
+					}
+					if( ret != cur ) /* Then you found one on the `other` side, so continue in j */
+					{
+						ck = 1; /* ck = 1 => stop because j does not form a simplex */
+						break;
+					}
+				}
+				if( ck == 0 ) /* If got through all k iteration then use j to complete the face */
+					break; // Because found a vertex to the left of the face min[0],...,j; find another j
+			}
+		}
+	}
+
+	/***
+	 * Note here that we need the final value of cur to determine which direction is `inside`.
+	 * If cur = 1, then simplex_determ > 0.0 implies `inside`, relative to the vertex
+	 * ordering in min. So at this point we also need to do the face_parity determinant
+	 * to detect handedness of the min vertices. If face_parity > 0, then min is right-
+	 * handed (or counter-clockwise), and so this means the order is such that the normal
+	 * points inward. We wish here to order the vertices in each face so as to have an
+	 * outward normal. If change the handedness of the vertices in min, then we change
+	 * the definition of `inside` because simplex_determ needs to be < 0.0 for the vertex
+	 * to be inside, assuming that face_parity is < 0.0 instead of > 0.0. So cur and
+	 * face_parity(min) together determine the rule which defines `inside`.
+	 */
+
+	/* First make sure min is listed in right-handed/counter-clockwise order relative
+		to the OUTSIDE, i.e. relative to the INSIDE, it should appear in left-handed/clockwise order */
+	for(i=0;i<mesh_in->dim;i++)
+		printf( "%d ", min[i] );
+	printf( "\n" );
+
+	/* Initialize edge list and face list */
+	list_init( &flist, mesh_in->dim * sizeof(long int) );
+	list_init( &elist, ( mesh_in->dim - 1 ) * sizeof(long int) );
+	list_append( &flist, min );
+
+	/* Add the initial unfinished edges, i.e. objects of dimension mesh_in->dim - 1 */
+	combinadic_init( mesh_in->dim, mesh_in->dim - 1, cmb );
+	for(i=0;i<binomial(mesh_in->dim,mesh_in->dim-1);i++)
+	{
+		for(j=0;j<mesh_in->dim-1;j++)
+			dmb[j] = min[cmb[j]];
+		list_append( &elist, dmb );
+		combinadic_next( mesh_in->dim, mesh_in->dim - 1, cmb );
+	}
+
+	/* Each step, pop front, when adding, append */
+// 	for(;;)
+// 	{
+// 		/* Pull an `edge` off of the queue and finish it */
+// 		list_popf( &elist, cmb );
+// 
+// 		/* Now find a vertex in mesh_in->vertx s.t. all nodes lie to the right of the resulting face */
+// 		for(i=0;i<mesh_in->nvert;i++)
+// 		{
+// 			/* Check if i already in cmb */
+// 			if( simple_find_long( i, mesh_in->dim - 1, cmb ) != -1 )
+// 				continue;
+// 
+// 			/* Make node i the mesh_in->dim'th node, completing the face */
+// 			cmb[mesh_in->dim-1] = i;
+// 
+// 			/* Load vertices into face */
+// 			for(m=0;m<mesh_in->dim;m++)
+// 				for(n=0;n<mesh_in->dim;n++)
+// 					face[m*mesh_in->dim+n] = mesh_in->vertx[cmb[m]*mesh_in->dim+n];
+// 
+// 			/* Make sure no node lies to its `left` */
+// 			ck = 0;
+// 			for(j=0;j<mesh_in->nvert;j++)
+// 			{
+// 				if( j == i )
+// 					continue;
+// 				if( simple_find_long( j, mesh_in->dim, cmb ) != -1 )
+// 					continue;
+// 				ret = mesh_vert_surf_test_dim( mesh_in->dim, mesh_in->vertx + j * mesh_in->dim, face );
+// 				if( ret != 0 )
+// 				{
+// 					ck = 1; /* Set the NOT YET FOUND flag */
+// 					break;
+// 				}
+// 			}
+// 			if( ck == 0 )
+// 			{
+// 				/* Add the new face and the new unfinished edges to the queue */
+// 				list_append( &flist, cmb );
+// 
+// 				/* This is the new node */
+// 				dmb[0] = i;
+// 
+// 				/* Take (dim-1)-combinations of dim-2 nodes and add resulting edges */
+// 				combinadic_init( mesh_in->dim - 1, mesh_in->dim - 2, emb );
+// 				for(k=0;k<binomial(mesh_in->dim-1,mesh_in->dim-2);k++)
+// 				{
+// 					for(m=0;m<mesh_in->dim-2;m++)
+// 						dmb[m+1] = cmb[emb[m]];
+// 					ret = list_append( &elist, dmb );
+// 					combinadic_next( mesh_in->dim - 1, mesh_in->dim - 2, emb );
+// 				}
+// 				break;
+// 			}
+// 		}
+// 		if( elist.size <= 0 )
+// 			break;
+// 	}
+	list_free( &flist );
+	list_free( &elist );
+	return 0;
+}
+
+int mesh_gen_del_wrap( mesh_t *mesh_in )
+{
+	long int h,i,j,k,m,n,p;
+	long int vids[mesh_in->dim+1];
+	long int wids[mesh_in->dim+1];
+	long int xids[mesh_in->dim+1];
+	long int vec[mesh_in->dim+1];
+	int ck1,ck2,tmp;
+	double circ,surf;
+
+	for(h=0;mesh_in->nunff>0;h++)
+	{
+		/* Remove a face from mesh_in->ufaces, f */
+		for(i=0;i<mesh_in->dim+1;i++)
+			vids[i] = mesh_in->ufaces[i];
+		mesh_del_unf_face( mesh_in, 0 );
+
+		/* Now find vertex which finishes f */
+		for(i=0;i<mesh_in->nvert;i++)
+		{
+			/* Make sure node i is not already in vids[0:dim] */
+			ck1 = 0;
+			for(j=0;j<mesh_in->dim+1;j++)
+				if( vids[j] == i )
+			{
+				ck1 = 1;
+				break;
+			}
+			if( ck1 == 1 )
+				continue; // i is already in the set, so continue
+			surf = mesh_vert_surf_test_interp_vert( mesh_in, mesh_in->vertx + i * mesh_in->dim, vids );
+			if( surf > 1.0 )
+			{
+				for(k=0;k<mesh_in->dim;k++)
+					wids[k] = vids[k];
+				wids[mesh_in->dim] = i;
+				m = 0;
+				for(j=0;j<mesh_in->nvert;j++)
+				{
+					ck1 = 0;
+					for(k=0;k<mesh_in->dim+1;k++)
+						if( wids[k] == j )
+					{
+						ck1 = 1;
+						break;
+					}
+					if( ck1 == 1 )
+						continue;
+					circ = mesh_vert_in_circsph_vert( mesh_in, mesh_in->vertx + j*mesh_in->dim, wids );
+					if( circ < 0.0 )
+					{
+						m = 1;
+						break;
+					}
+				}
+				if( m == 0 ) // => no node in its circumsphere
+				{
+					/* Then the circumsphere is empty, so add to simplices */
+					p = mesh_simpx_index( mesh_in, wids );
+					if( p == -1 )
+						mesh_app_simpx( mesh_in, wids );
+					else
+						continue;
+
+					/* Now check the faces other than f */
+					combinadic_init( mesh_in->dim + 1, mesh_in->dim, vec );
+					for(j=0,k=mesh_in->dim-1;j<binomial(mesh_in->dim+1,mesh_in->dim)-1;j++,k--)
+					{
+						combinadic_next( mesh_in->dim + 1, mesh_in->dim, vec );
+						for(m=0;m<mesh_in->dim;m++)
+							xids[m] = wids[vec[m]];
+						xids[mesh_in->dim] = wids[k];
+
+						/* Check xids against ufaces and add accordingly */
+						p = mesh_ufaces_index( mesh_in, xids );
+						if( p == -1 )
+							mesh_app_unf_face( mesh_in, xids );
+						else
+							mesh_del_unf_face( mesh_in, p );
+					}
+					break;
+				}
+			}
+		}
+	}
+
+	return 0;
+}
+
+void mesh_print_ufaces( mesh_t *mesh_in )
+{
+	int i,j;
+	printf( "Unfinished faces:\n" );
+	printf( "Total: %d\n", mesh_in->nunff );
+	for(i=0;i<mesh_in->nunff;i++)
+	{
+		printf( "%d: ", i );
+		for(j=0;j<mesh_in->dim;j++)
+			printf( "%d ", mesh_in->ufaces[i*(mesh_in->dim+1)+j] );
+		printf( ": %d\n", mesh_in->ufaces[i*(mesh_in->dim+1)+mesh_in->dim] );
+	}
+}
+
+void mesh_print_nsmap( mesh_t *mesh_in )
+{
+	long int i,j;
+	for(i=0;i<mesh_in->nvert;i++)
+	{
+		printf( "%d: ", i );
+		for(j=0;j<mesh_in->nssize[i];j++)
+			printf( "%d ", mesh_in->nsmap[i][j] );
+		printf( "\n" );
+	}
+}
+
+int mesh_del_unf_face( mesh_t *mesh_in, long int idx_in )
+{
+	long int i;
+	long int idx = ( idx_in + 1 ) * ( mesh_in->dim + 1 );
+	long int mix = mesh_in->nunff * ( mesh_in->dim + 1 );
+	long int *ptr;
+	if( mesh_in->nunff > 1 )
+	{
+		for(i=idx;i<mix;i++)
+			mesh_in->ufaces[i-(mesh_in->dim+1)] = mesh_in->ufaces[i];
+		ptr = (long int*) realloc( mesh_in->ufaces, ( mesh_in->nunff - 1 ) * ( mesh_in->dim + 1 ) * sizeof(long int) );
+		if( ptr != NULL )
+		{
+			mesh_in->ufaces = ptr;
+			--mesh_in->nunff;
+		}
+		else
+			return -1;
+	}
+	else
+	{
+		if( mesh_in->nunff == 1 )
+		{
+			free( mesh_in->ufaces );
+			mesh_in->ufaces = NULL; // To make sure that calling realloc next time doesn't fail miserably
+			--mesh_in->nunff;
+		}
+		else
+			return -1;
+	}
+	return 0;
+}
+
+int mesh_app_unf_face( mesh_t *mesh_in, long int *face_in )
+{
+	long int i;
+	long int mix = mesh_in->nunff * ( mesh_in->dim + 1 );
+	long int *ptr = (long int*) realloc( mesh_in->ufaces, ( mix + mesh_in->dim + 1 ) * sizeof(long int) );
+	if( ptr != NULL )
+	{
+		mesh_in->ufaces = ptr;
+		for(i=0;i<mesh_in->dim+1;i++)
+			mesh_in->ufaces[mix+i] = face_in[i];
+		++mesh_in->nunff;
+	}
+	else
+		return -1;
+	return 0;
+}
+
+long int mesh_ufaces_index( mesh_t *mesh_in, long int *idx_in )
+{
+	long int i,j,k;
+	for(i=0;i<mesh_in->nunff;i++)
+	{
+		k = 1;
+		for(j=0;j<mesh_in->dim;j++)
+		{
+			if( std::find( mesh_in->ufaces + i * ( mesh_in->dim + 1 ),
+				mesh_in->ufaces + i * ( mesh_in->dim + 1 ) + mesh_in->dim,
+				idx_in[j] ) == mesh_in->ufaces + i * ( mesh_in->dim + 1 ) + mesh_in->dim )
+					k = 0;
+		}
+		if( k == 1 )
+			return i;
+	}
+	return -1;
+}
+
+int mesh_del_simpx( mesh_t *mesh_in, long int idx_in )
+{
+	long int i;
+	long int idx = ( idx_in + 1 ) * ( mesh_in->dim + 1 );
+	long int mix = mesh_in->nsimp * ( mesh_in->dim + 1 );
+	long int *ptr;
+	for(i=idx;i<mix;i++)
+		mesh_in->simpx[i-(mesh_in->dim+1)] = mesh_in->simpx[i];
+	ptr = (long int*) realloc( mesh_in->simpx, ( mesh_in->nsimp - 1 ) * ( mesh_in->dim + 1 ) * sizeof(long int) );
+	if( ptr != NULL )
+	{
+		mesh_in->simpx = ptr;
+		--mesh_in->nsimp;
+	}
+	else
+		return -1;
+	return 0;
+}
+
+int mesh_app_simpx( mesh_t *mesh_in, long int *idx_in )
+{
+	long int i;
+	long int mix = mesh_in->nsimp * ( mesh_in->dim + 1 );
+	long int *ptr = (long int*) realloc( mesh_in->simpx, ( mix + mesh_in->dim + 1 ) * sizeof(long int) );
+	if( ptr != NULL )
+	{
+		mesh_in->simpx = ptr;
+		for(i=0;i<mesh_in->dim+1;i++)
+			mesh_in->simpx[mix+i] = idx_in[i];
+		++mesh_in->nsimp;
+	}
+	else
+		return -1;
+	return 0;
+}
+
+long int mesh_simpx_index( mesh_t *mesh_in, long int *idx_in )
+{
+	long int i,j,k;
+	for(i=0;i<mesh_in->nsimp;i++)
+	{
+		k = 1;
+		for(j=0;j<mesh_in->dim+1;j++)
+		{
+			if( std::find( mesh_in->simpx + i * ( mesh_in->dim + 1 ),
+				mesh_in->simpx + i * ( mesh_in->dim + 1 ) + mesh_in->dim + 1,
+				idx_in[j] ) == mesh_in->simpx + i * ( mesh_in->dim + 1 ) + mesh_in->dim + 1 )
+					k = 0;
+		}
+		if( k == 1 )
+			return i;
+	}
+	return -1;
+}
+
+int mesh_del_hull_face( mesh_t *mesh_in, long int idx_in )
+{
+	
+}
+
+int mesh_app_hull_face( mesh_t *mesh_in, long int *face_in )
+{
+	
+}
+
+long int mesh_hfaces_index( mesh_t *mesh_in, long int *face_in )
+{
+	
+}
+
+int mesh_set_hface_type( mesh_t *mesh_in, long int fidx_in, int type_in )
+{
+	
+}
+
+int mesh_set_vertx_type( mesh_t *mesh_in, long int vidx_in, int type_in )
+{
+	
+}
+
+int mesh_gen_node_simp_map( mesh_t *mesh_in )
+{
+	long int i,j,s;
+	long int *ptr;
+
+	mesh_in->nsmap = (long int**) malloc( mesh_in->nvert * sizeof(long int*) );
+	mesh_in->nssize = (long int*) malloc( mesh_in->nvert * sizeof(long int) );
+
+	for(i=0;i<mesh_in->nvert;i++)
+		mesh_in->nsmap[i] = NULL; // This is very important!!!
+	for(i=0;i<mesh_in->nvert;i++)
+		mesh_in->nssize[i] = 0;
+
+	for(i=0;i<mesh_in->nvert;i++)
+	{
+		/* Now search for vertex i in the list of simplices */
+		for(j=0;j<mesh_in->nsimp;j++)
+		{
+			s = simple_find_long( i, mesh_in->dim + 1, mesh_in->simpx + j * ( mesh_in->dim + 1 ) );
+			if( s != -1 )
+			{
+				/* So append simplex j onto the list of vertex i, at mesh_in->nsmap[i] */
+				ptr = (long int *) realloc( mesh_in->nsmap[i], ( mesh_in->nssize[i] + 1 ) * sizeof(long int) );
+				if( ptr != NULL )
+				{
+					mesh_in->nsmap[i] = ptr;
+					mesh_in->nsmap[i][mesh_in->nssize[i]] = j;
+					++mesh_in->nssize[i];
+				}
+				else
+					return -1;
+			}
+		}
+	}
+	return 0;
+}
+
+int mesh_vert_surf_test( mesh_t *mesh_in, double *point_in, long int *vids_in )
+{
+	long int i,j,dim_in = mesh_in->dim;
+	double det1,det2;
+	dmatrix_t mat1,mat2;
+
+	mat1.start = (double*) malloc( dim_in * dim_in * sizeof(double) );
+	mat1.rsize = dim_in;
+	mat1.nrows = dim_in;
+	mat1.ncols = dim_in;
+	mat2.start = (double*) malloc( ( dim_in + 1 ) * ( dim_in + 1 ) * sizeof(double) );
+	mat2.rsize = dim_in + 1;
+	mat2.nrows = dim_in + 1;
+	mat2.ncols = dim_in + 1;
+
+	for(i=0;i<dim_in;i++)
+		for(j=0;j<dim_in;j++)
+			mat1.start[j*mat1.rsize+i] = mesh_in->vertx[vids_in[i]*dim_in+j];
+	for(i=0;i<dim_in;i++)
+		for(j=0;j<dim_in;j++)
+			mat2.start[j*mat2.rsize+i] = mesh_in->vertx[vids_in[i]*dim_in+j];
+	for(j=0;j<dim_in;j++)
+		mat2.start[j*mat2.rsize+dim_in] = point_in[j];
+	for(i=0;i<dim_in+1;i++)
+		mat2.start[dim_in*mat2.rsize+i] = 1.0;
+
+	dmatrix_lu_dcmp( &mat1 );
+	det1 = 1.0;
+	for(j=0;j<dim_in;j++)
+		det1 *= mat1.start[j*mat1.rsize+j];
+	det2 = 1.0;
+	dmatrix_lu_dcmp( &mat2 );
+	for(j=0;j<dim_in+1;j++)
+		det2 *= mat2.start[j*mat2.rsize+j];
+	free( mat1.start );
+	free( mat2.start );
+
+	if( det1 < 0.0 )
+	{
+		if( det2 > 0.0 )
+			return 1;
+		else
+			return 0;
+	}
+	else
+	{
+		if( det2 < 0.0 )
+			return 1;
+		else
+			return 0;
+	}
+
+	return -1; // Should never get here; this is a bad bad error
+}
+
+/**
+ * This function returns 1 if point_in lies to the RIGHT of face_in, which
+ * is defined by dim_in points.
+ */
+int mesh_vert_surf_test_dim( long int dim_in, double *point_in, double *face_in )
+{
+	long int i,j;
+	double det1,det2;
+	dmatrix_t /*mat1,*/mat2;
+
+// 	mat1.start = (double*) malloc( dim_in * dim_in * sizeof(double) );
+// 	mat1.rsize = dim_in;
+// 	mat1.nrows = dim_in;
+// 	mat1.ncols = dim_in;
+	mat2.start = (double*) malloc( ( dim_in + 1 ) * ( dim_in + 1 ) * sizeof(double) );
+	mat2.rsize = dim_in + 1;
+	mat2.nrows = dim_in + 1;
+	mat2.ncols = dim_in + 1;
+
+// 	for(i=0;i<dim_in;i++)
+// 		for(j=0;j<dim_in;j++)
+// 			mat1.start[j*mat1.rsize+i] = face_in[i*dim_in+j];
+	for(i=0;i<dim_in;i++)
+		for(j=0;j<dim_in;j++)
+			mat2.start[j*mat2.rsize+i] = face_in[i*dim_in+j];
+	for(j=0;j<dim_in;j++)
+		mat2.start[j*mat2.rsize+dim_in] = point_in[j];
+	for(i=0;i<dim_in+1;i++)
+		mat2.start[dim_in*mat2.rsize+i] = 1.0;
+
+// 	dmatrix_lu_dcmp( &mat1 );
+// 	det1 = 1.0;
+// 	for(j=0;j<dim_in;j++)
+// 		det1 *= mat1.start[j*mat1.rsize+j];
+	det1 = mesh_face_parity( dim_in, point_in, face_in );
+	det2 = 1.0;
+	dmatrix_lu_dcmp( &mat2 );
+	for(j=0;j<dim_in+1;j++)
+		det2 *= mat2.start[j*mat2.rsize+j];
+// 	free( mat1.start );
+	free( mat2.start );
+	if( det1 < 0.0 )
+	{
+		if( det2 > 0.0 )
+			return 1;
+		else
+			return 0;
+	}
+	else
+	{
+		if( det2 < 0.0 )
+			return 1;
+		else
+			return 0;
+	}
+	return -1; // Should never get here; this is a bad bad error
+}
+
+double mesh_vert_surf_test_interp_face( mesh_t *mesh_in, double *vert_in, long int fid_in )
+{
+	/* Equivalent to plane_test as written previously */
+	long int i;
+	double sum;
+	long int vidx[mesh_in->dim+1];
+	for(i=0;i<mesh_in->dim+1;i++)
+		vidx[i] = mesh_in->ufaces[fid_in*(mesh_in->dim+1)+i];
+	sum = mesh_vert_surf_test_interp_vert( mesh_in, vert_in, vidx );
+	return sum;
+}
+
+double mesh_vert_surf_test_interp_vert( mesh_t *mesh_in, double *vert_in, long int *vids_in )
+{
+	/* Equivalent to plane_test as written previously */
+	long int i,j,vidx;
+	double sum;
+	dmatrix_t mat;
+	dvector_t vec;
+	mat.start = (double*) malloc( ( mesh_in->dim + 1 ) * ( mesh_in->dim + 1 ) * sizeof(double) );
+	mat.rsize = mesh_in->dim + 1;
+	mat.nrows = mesh_in->dim + 1;
+	mat.ncols = mesh_in->dim + 1;
+	vec.start = (double*) malloc( ( mesh_in->dim + 1 ) * sizeof(double) );
+	vec.rsize = 1;
+	vec.length = mesh_in->dim + 1;
+
+	for(i=0;i<mesh_in->dim+1;i++)
+	{
+		vidx = vids_in[i];
+		mat.start[i*mat.rsize] = 1.0;
+		for(j=0;j<mesh_in->dim;j++)
+			mat.start[i*mat.rsize+j+1] = mesh_in->vertx[ mesh_in->dim * vidx + j ];
+	}
+	for(i=0;i<mesh_in->dim;i++)
+		vec.start[i*vec.rsize] = 1.0;
+	vec.start[mesh_in->dim*vec.rsize] = 0.0;
+	dmatrix_lu_dcmp( &mat );
+	dmatrix_fb_sub_vrhs( &mat, &vec );
+
+	/* Now calculate the interpolant's value at vert_in */
+	sum = vec.start[0];
+	for(i=0;i<mesh_in->dim;i++)
+		sum += vec.start[(i+1)*vec.rsize] * vert_in[i];
+
+	free( mat.start );
+	free( vec.start );
+
+	return sum;
+}
+
+double mesh_face_parity( long int dim_in, double *point_in, double *face_in )
+{
+	long int i,j;
+	double det;
+	dmatrix_t mat;
+
+	mat.start = (double*) malloc( dim_in * dim_in * sizeof(double) );
+	mat.rsize = dim_in;
+	mat.nrows = dim_in;
+	mat.ncols = dim_in;
+	for(i=0;i<dim_in;i++)
+		for(j=0;j<dim_in;j++)
+			mat.start[j*dim_in+i] = face_in[i*dim_in+j] - point_in[j];
+	det = 1.0;
+	dmatrix_lu_dcmp( &mat );
+	for(i=0;i<dim_in;i++)
+		det *= mat.start[i*mat.rsize+i];
+	return det;
+}
+
+double mesh_simplex_determ( long int dim_in, double *point_in, double *face_in )
+{
+	long int i,j;
+	double det;
+	dmatrix_t mat;
+
+	mat.start = (double*) malloc( ( dim_in + 1 ) * ( dim_in + 1 ) * sizeof(double) );
+	mat.rsize = dim_in + 1;
+	mat.nrows = dim_in + 1;
+	mat.ncols = dim_in + 1;
+
+	for(i=0;i<dim_in;i++)
+		for(j=0;j<dim_in;j++)
+			mat.start[j*mat.rsize+i] = face_in[i*dim_in+j];
+	for(j=0;j<dim_in;j++)
+		mat.start[j*mat.rsize+dim_in] = point_in[j];
+	for(i=0;i<dim_in+1;i++)
+		mat.start[dim_in*mat.rsize+i] = 1.0;
+
+	det = 1.0;
+	dmatrix_lu_dcmp( &mat );
+	for(j=0;j<dim_in+1;j++)
+		det *= mat.start[j*mat.rsize+j];
+
+	free( mat.start );
+	return det;
+}
+
+double mesh_vert_in_circsph( mesh_t *mesh_in, double *vert_in, long int sid_in )
+{
+	long int i;
+	double det;
+	long int vids[mesh_in->dim+1];
+	for(i=0;i<mesh_in->dim+1;i++)
+		vids[i] = mesh_in->simpx[sid_in*(mesh_in->dim+1)+i];
+	det = mesh_vert_in_circsph_vert( mesh_in, vert_in, vids );
+	return det;
+}
+
+double mesh_vert_in_circsph_vert( mesh_t *mesh_in, double *vert_in, long int *vids_in )
+{
+	dmatrix_t mat;
+	long int i,j;
+	double det = 1.0;
+	double norm;
+	mat.start = (double*) malloc( ( mesh_in->dim + 2 ) * ( mesh_in->dim + 2 ) * sizeof(double) );
+	mat.rsize = mesh_in->dim + 2;
+	mat.nrows = mesh_in->dim + 2;
+	mat.ncols = mesh_in->dim + 2;
+
+	/* Insert the `one's into the rightmost column */
+	for(i=0;i<mesh_in->dim+2;i++)
+		mat.start[i*mat.rsize+mesh_in->dim+1] = 1.0;
+
+	/* First line: vert_in data */
+	mat.start[0] = 0.0;
+	for(j=1;j<mesh_in->dim+1;j++)
+	{
+		mat.start[j] = vert_in[j-1];
+		mat.start[0] += vert_in[j-1] * vert_in[j-1];
+	}
+
+	for(i=1;i<mesh_in->dim+2;i++)
+	{
+		mat.start[i*(mesh_in->dim+2)] = 0.0;
+		for(j=1;j<mesh_in->dim+1;j++)
+		{
+			mat.start[i*(mesh_in->dim+2)] += mesh_in->vertx[vids_in[i-1]*mesh_in->dim+j-1] * mesh_in->vertx[vids_in[i-1]*mesh_in->dim+j-1];
+			mat.start[i*(mesh_in->dim+2)+j] = mesh_in->vertx[vids_in[i-1]*mesh_in->dim+j-1];
+		}
+	}
+
+	dmatrix_lu_dcmp( &mat );
+
+	for(i=0;i<mesh_in->dim+2;i++)
+		det *= mat.start[i*(mesh_in->dim+2)+i];
+
+	free( mat.start );
+	return det;
+}

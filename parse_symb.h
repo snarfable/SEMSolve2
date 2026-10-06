@@ -1,0 +1,12 @@
+#ifndef SEMSOLVE2_PARSE_SYMB_H
+#define SEMSOLVE2_PARSE_SYMB_H
+
+#define SECTION_T	500
+#define STATEMENT_T	501
+#define EQUAL_T		502
+#define LBRACKET_T	503
+#define RBRACKET_T	504
+#define INTEGER_T	505
+#define FLOAT_T		506
+
+#endif

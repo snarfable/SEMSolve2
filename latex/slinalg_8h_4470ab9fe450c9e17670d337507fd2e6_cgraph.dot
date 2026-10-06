@@ -1,0 +1,15 @@
+digraph G
+{
+  bgcolor="transparent";
+  edge [fontname="FreeSans",fontsize=10,labelfontname="FreeSans",labelfontsize=10];
+  node [fontname="FreeSans",fontsize=10,shape=record];
+  rankdir=LR;
+  Node1 [label="smatrix_dsplud",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled" fontcolor="black"];
+  Node1 -> Node1 [color="midnightblue",fontsize=10,style="solid"];
+  Node1 -> Node2 [color="midnightblue",fontsize=10,style="solid"];
+  Node2 [label="smatrix_entry",height=0.2,width=0.4,color="black",URL="$slinalg_8h.html#f697176da753fee5713a0a05d71a73af",tooltip="Returns the values of an entry."];
+  Node1 -> Node3 [color="midnightblue",fontsize=10,style="solid"];
+  Node3 [label="smatrix_insert",height=0.2,width=0.4,color="black",URL="$slinalg_8h.html#d6668ecbfbcfe9e547b0d8745c6064dc",tooltip="Inserts a new entry into an smatrix_t if it doesn&#39;t exist or updates it if it..."];
+  Node3 -> Node4 [color="midnightblue",fontsize=10,style="solid"];
+  Node4 [label="_smatrix_insert",height=0.2,width=0.4,color="black",URL="$slinalg_8h.html#5407ccf4ac18b0dd74b103795f34f6d8",tooltip="Used internally only; Does not modify nvals."];
+}

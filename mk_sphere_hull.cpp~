@@ -1,0 +1,123 @@
+#include <cstdio>
+#include <cstdlib>
+#include <cmath>
+#include <ctime>
+#include <unistd.h>
+
+#include <dlinalg.h>
+
+void print_usage()
+{
+	printf( "Usage: mk_sphere_hull [-d dim] [-r sph rad] [-n surf nodes] [-a fill rad] [-f fill nodes]\n" );
+}
+
+int main( int argc, char **argv )
+{
+	long int i,j,k;
+	int opt;
+	double *hpoints,*fpoints;
+	double tmp;
+	FILE *fp;
+
+	/* Options */
+	long int opt_dim	 = 0;
+	double	 opt_radius_hull = 1.0;
+	long int opt_num_hull	 = 0;
+	double	 opt_radius_fill = 1.0;
+	long int opt_num_fill	 = 0;
+
+	/* Center */
+	double ctr[3] = { 5.0, 5.0, 5.0 };
+
+	while( ( opt = getopt( argc, argv, "d:r:n:a:f:" ) ) != -1 )
+	{
+		switch(opt)
+		{
+			case 'd': /* Set the vector dimension */
+				opt_dim = atol( optarg );
+				break;
+			case 'r': /* The sphere radius */
+				opt_radius_hull = atof( optarg );
+				break;
+			case 'n': /* Number of nodes to choose in hull */
+				opt_num_hull = atol( optarg );
+				break;
+			case 'a': /* Fill inside hull radius */
+				opt_radius_fill = atof( optarg );
+				break;
+			case 'f': /* Number of points to put inside hull */
+				opt_num_fill = atol( optarg );
+				break;
+			default:
+				print_usage();
+				exit(0);
+				break;
+		}
+	}
+
+	/* Start by making the hull vertices */
+	hpoints = (double*) malloc( opt_dim * opt_num_hull * sizeof(double) );
+	fpoints = (double*) malloc( opt_dim * opt_num_fill * sizeof(double) );
+
+	/* Choose hull points using generalized spherical coordinates */
+	srand((unsigned)time(0));
+	for(i=0;i<opt_num_hull;i++)
+	{
+		tmp = 0.0;
+		for(j=0;j<opt_dim;j++)
+		{
+			hpoints[i*opt_dim+j] = ( rand() > RAND_MAX / 2 ? -1.0 : 1.0 ) * (double) rand() / (double) RAND_MAX;
+			tmp += hpoints[i*opt_dim+j] * hpoints[i*opt_dim+j];
+		}
+		tmp = sqrt( tmp );
+		for(j=0;j<opt_dim;j++)
+			hpoints[i*opt_dim+j] = hpoints[i*opt_dim+j] / tmp * opt_radius_hull;
+	}
+
+	/* Now choose the fill points */
+	for(i=0;i<opt_num_fill;i++)
+	{
+		tmp = 0.0;
+		for(j=0;j<opt_dim;j++)
+		{
+			fpoints[i*opt_dim+j] = ( rand() > RAND_MAX / 2 ? -1.0 : 1.0 ) * (double) rand() / (double) RAND_MAX;
+			tmp += fpoints[i*opt_dim+j] * fpoints[i*opt_dim+j];
+		}
+		tmp = sqrt( tmp );
+		for(j=0;j<opt_dim;j++)
+			fpoints[i*opt_dim+j] = fpoints[i*opt_dim+j] / tmp;
+
+		/* Now randomly generated the magnitude less than the fill radius */
+		tmp = opt_radius_fill * opt_radius_fill * (double) rand() / (double) RAND_MAX;
+		tmp = sqrt( tmp ); // Results in vertex being chosen from a flat distribution w.r.t. dx1dx2...dxN volume element
+		for(j=0;j<opt_dim;j++)
+			fpoints[i*opt_dim+j] = fpoints[i*opt_dim+j] * tmp;
+	}
+
+	fp = fopen( argv[optind], "w" );
+	if( fp == NULL )
+	{
+		printf( "%s: Could not open file for writing\n", argv[0], argv[optind] );
+		print_usage();
+		exit(0);
+	}
+	fprintf( fp, "%d\n%d\n", opt_dim, opt_num_hull + opt_num_fill );
+	for(i=0;i<opt_num_hull;i++)
+	{
+		for(j=0;j<opt_dim;j++)
+			fprintf( fp, "%f ", hpoints[i*opt_dim+j] + ctr[j] );
+		fprintf( fp, "\n" );
+	}
+	for(i=0;i<opt_num_fill;i++)
+	{
+		for(j=0;j<opt_dim;j++)
+			fprintf( fp, "%f ", fpoints[i*opt_dim+j] + ctr[j] );
+		fprintf( fp, "\n" );
+	}
+	fclose( fp );
+
+	free( hpoints );
+	free( fpoints );
+
+	return 0;
+}

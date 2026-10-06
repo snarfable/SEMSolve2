@@ -1,0 +1,6 @@
+<configuration version="1.0" name="conf1" author="Ryan Daly">
+	<ionfile type="xml">nuclei.xml</ionfile>
+	<ionfile type="pdb">nuclei.pdb</ionfile>
+	<meshfile type="msh">test.msh</meshfile>
+</configuration>
+
